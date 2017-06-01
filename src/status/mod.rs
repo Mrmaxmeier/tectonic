@@ -7,6 +7,7 @@
 #[macro_use] pub mod termcolor;
 
 use std::cmp;
+use std::fmt;
 use std::fmt::Arguments;
 
 use errors::Error;
@@ -48,9 +49,22 @@ pub enum MessageKind {
     Error,
 }
 
+#[derive(Clone, Debug)]
+pub struct MessageLocation {
+    pub lines: (u64, u64),
+    pub chars: (u64, u64),
+    pub file: String,
+}
+
+impl fmt::Display for MessageLocation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:{}:{}", self.file, self.lines.0, self.chars.0)
+    }
+}
 
 pub trait StatusBackend {
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>);
+    fn report_at(&mut self, location: MessageLocation, kind: MessageKind, args: Arguments);
 }
 
 /// Report a formatted informational message to the user.
@@ -107,4 +121,5 @@ impl NoopStatusBackend {
 
 impl StatusBackend for NoopStatusBackend {
     fn report(&mut self, _kind: MessageKind, _args: Arguments, _err: Option<&Error>) {}
+    fn report_at(&mut self, _location: MessageLocation, _kind: MessageKind, _args: Arguments) {}
 }
