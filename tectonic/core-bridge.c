@@ -158,6 +158,12 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
     return len;
 }
 
+void
+ttstub_issue_error_at(char const *file, uint64_t line)
+{
+    TGB->issue_error_at(TGB->context, file, line);
+}
+
 int
 ttstub_get_file_md5(char const *path, char *digest)
 {

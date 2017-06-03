@@ -94,6 +94,7 @@ typedef struct tt_bridge_api_t {
 
     void (*issue_warning)(void *context, char const *text);
     void (*issue_error)(void *context, char const *text);
+    void (*issue_error_at)(void *context, char const *file, uint64_t line);
 
     int (*get_file_md5)(void *context, char const *path, char *digest);
     int (*get_data_md5)(void *context, char const *data, size_t len, char *digest);
@@ -139,6 +140,7 @@ char *kpse_find_file (char const *name, kpse_file_format_type format, int must_e
 PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
 PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
+void ttstub_issue_error_at(char const *file, uint64_t line);
 
 int ttstub_get_file_md5 (char const *path, char *digest);
 int ttstub_get_data_md5 (char const *data, size_t len, char *digest);

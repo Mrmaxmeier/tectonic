@@ -25,8 +25,7 @@ use std::{io, ptr, slice};
 use digest::DigestData;
 use errors::{Error, ErrorKind, Result};
 use io::{InputOrigin, IoProvider, InputFeatures, InputHandle, OpenResult, OutputHandle};
-use status::StatusBackend;
-
+use status::{StatusBackend, MessageLocation, MessageKind};
 
 // Public sub-modules and reexports.
 
@@ -429,6 +428,7 @@ struct TectonicBridgeApi {
     kpse_find_file: *const libc::c_void,
     issue_warning: *const libc::c_void,
     issue_error: *const libc::c_void,
+    issue_error_at: *const libc::c_void,
     get_file_md5: *const libc::c_void,
     get_data_md5: *const libc::c_void,
     output_open: *const libc::c_void,
@@ -485,6 +485,18 @@ fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *co
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
+}
+
+fn issue_error_at<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, file: *const i8, line: u64) {
+    let es = unsafe { &mut *es };
+    let rfile = unsafe { CStr::from_ptr(file) };
+
+    let loc = MessageLocation {
+        file: rfile.to_string_lossy().into_owned(),
+        lines: (line, line),
+        chars: (0, 0)
+    };
+    es.status.report_at(loc, MessageKind::Error, format_args!("some error from error_at"));
 }
 
 fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
@@ -691,6 +703,7 @@ impl TectonicBridgeApi {
             kpse_find_file: kpse_find_file::<'a, I> as *const libc::c_void,
             issue_warning: issue_warning::<'a, I> as *const libc::c_void,
             issue_error: issue_error::<'a, I> as *const libc::c_void,
+            issue_error_at: issue_error_at::<'a, I> as *const libc::c_void,
             get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
             get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
             output_open: output_open::<'a, I> as *const libc::c_void,

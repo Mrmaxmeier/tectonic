@@ -56,6 +56,21 @@ error(void)
     if (history < HISTORY_ERROR_ISSUED)
         history = HISTORY_ERROR_ISSUED;
 
+    {
+        integer level = in_open;
+
+        while ((level > 0) && (full_source_filename_stack[level] == 0))
+            level--;
+
+        string filename = gettexstring(full_source_filename_stack[level]);
+        if (level > 0) {
+            if (level == in_open)
+                ttstub_issue_error_at(filename, line - 1);
+            else
+                ttstub_issue_error_at(filename, line_stack[level + 1] - 1);
+        }
+    }
+
     print_char('.');
     show_context();
     if (halt_on_error_p) {
