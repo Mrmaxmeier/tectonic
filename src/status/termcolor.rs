@@ -183,13 +183,11 @@ impl StatusBackend for TermcolorStatusBackend {
             MessageKind::Error => "error:",
         };
 
-        let text = format!("[{}] {}", location, text);
-
         self.styled(kind, |s| {
             write!(s, "{}", text).expect("failed to write to standard stream");
         });
         self.with_stream(kind, |s| {
-            writeln!(s, " {}", args).expect("failed to write to standard stream");
+            writeln!(s, " [{}] {}", location, args).expect("failed to write to standard stream");
         });
     }
 }

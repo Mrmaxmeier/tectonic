@@ -159,9 +159,9 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
 }
 
 void
-ttstub_issue_error_at(char const *file, uint64_t line)
+ttstub_issue_error_at(char const *file, uint64_t line, char const *text)
 {
-    TGB->issue_error_at(TGB->context, file, line);
+    TGB->issue_error_at(TGB->context, file, line, text);
 }
 
 int

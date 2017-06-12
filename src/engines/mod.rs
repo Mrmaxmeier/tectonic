@@ -487,16 +487,17 @@ fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *co
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn issue_error_at<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, file: *const i8, line: u64) {
+fn issue_error_at<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, file: *const i8, line: u64, text: *const i8) {
     let es = unsafe { &mut *es };
     let rfile = unsafe { CStr::from_ptr(file) };
+    let rtext = unsafe { CStr::from_ptr(text) };
 
     let loc = MessageLocation {
         file: rfile.to_string_lossy().into_owned(),
         lines: (line, line),
         chars: (0, 0)
     };
-    es.status.report_at(loc, MessageKind::Error, format_args!("some error from error_at"));
+    es.status.report_at(loc, MessageKind::Error, format_args!("{}", rtext.to_string_lossy()));
 }
 
 fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {

@@ -57,17 +57,26 @@ error(void)
         history = HISTORY_ERROR_ISSUED;
 
     {
-        integer level = in_open;
+        integer hp = help_ptr;
+        string help_string = xmalloc(1024);
+        help_string[0] = NULL;
 
+        while (hp > 0) {
+            hp--;
+            strcat(help_string, gettexstring(help_line[hp]));
+            strcat(help_string, "\n");
+        }
+
+        integer level = in_open;
         while ((level > 0) && (full_source_filename_stack[level] == 0))
             level--;
 
         string filename = gettexstring(full_source_filename_stack[level]);
         if (level > 0) {
             if (level == in_open)
-                ttstub_issue_error_at(filename, line - 1);
+                ttstub_issue_error_at(filename, line - 1, help_string);
             else
-                ttstub_issue_error_at(filename, line_stack[level + 1] - 1);
+                ttstub_issue_error_at(filename, line_stack[level + 1] - 1, help_string);
         }
     }
 
