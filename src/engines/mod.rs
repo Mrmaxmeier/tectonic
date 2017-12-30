@@ -423,29 +423,68 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
 #[repr(C)]
 struct TectonicBridgeApi {
+    // void *context;
     context: *const libc::c_void,
-    kpse_find_file: *const libc::c_void,
-    issue_warning: *const libc::c_void,
-    issue_error: *const libc::c_void,
-    get_file_md5: *const libc::c_void,
-    get_data_md5: *const libc::c_void,
-    output_open: *const libc::c_void,
-    output_open_stdout: *const libc::c_void,
-    output_putc: *const libc::c_void,
-    output_write: *const libc::c_void,
-    output_flush: *const libc::c_void,
-    output_close: *const libc::c_void,
-    input_open: *const libc::c_void,
-    input_open_primary: *const libc::c_void,
-    input_get_size: *const libc::c_void,
-    input_seek: *const libc::c_void,
-    input_read: *const libc::c_void,
-    input_getc: *const libc::c_void,
-    input_ungetc: *const libc::c_void,
-    input_close: *const libc::c_void,
+
+    // char *(*kpse_find_file)(void *context, char const *name, kpse_file_format_type format, int must_exist);
+    kpse_find_file: fn(*const libc::c_void, &libc::c_char, FileFormat, bool) -> libc::c_char,
+
+    // void (*issue_warning)(void *context, char const *text);
+    issue_warning: fn(*const libc::c_void, &libc::c_char) -> libc::c_void,
+
+    // void (*issue_error)(void *context, char const *text);
+    issue_error: fn(*const libc::c_void, &libc::c_char) -> libc::c_void,
+
+    // int (*get_file_md5)(void *context, char const *path, char *digest);
+    get_file_md5: fn(*const libc::c_void, &libc::c_char, &libc::c_char) -> libc::c_int,
+
+    // int (*get_data_md5)(void *context, char const *data, size_t len, char *digest);
+    get_data_md5: fn(*const libc::c_void, &libc::c_char, usize, &libc::c_char) -> libc::c_int,
+
+    // rust_output_handle_t (*output_open)(void *context, char const *path, int is_gz);
+    output_open: fn(*const libc::c_void, &libc::c_char, bool) -> &InputHandle,
+
+    // rust_output_handle_t (*output_open_stdout)(void *context);
+    output_open_stdout: fn(*const libc::c_void) -> &InputHandle,
+
+    // int (*output_putc)(void *context, rust_output_handle_t handle, int c);
+    output_putc: fn(*const libc::c_void, &InputHandle, libc::c_int) -> libc::c_int,
+
+    // size_t (*output_write)(void *context, rust_output_handle_t handle, const char *data, size_t len);
+    output_write: fn(*const libc::c_void, &InputHandle, &libc::c_char, usize) -> usize,
+
+    // int (*output_flush)(void *context, rust_output_handle_t handle);
+    output_flush: fn(*const libc::c_void, &InputHandle),
+
+    // int (*output_close)(void *context, rust_output_handle_t handle);
+    output_close: fn(*const libc::c_void, &InputHandle),
+
+    // rust_input_handle_t (*input_open)(void *context, char const *path, kpse_file_format_type format, int is_gz);
+    input_open: fn(*const libc::c_void, &libc::c_char, FileFormat, bool) -> &InputHandle,
+
+    // rust_input_handle_t (*input_open_primary)(void *context);
+    input_open_primary: fn (*const libc::c_void) -> &InputHandle,
+
+    // size_t (*input_get_size)(void *context, rust_input_handle_t handle);
+    input_get_size: fn (*const libc::c_void, &InputHandle) -> usize,
+
+    // size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence);
+    input_seek: fn (*const libc::c_void, &InputHandle, isize, libc::c_int) -> usize,
+
+    // ssize_t (*input_read)(void *context, rust_input_handle_t handle, char *data, size_t len);
+    input_read: fn(*const libc::c_void, &InputHandle, &libc::c_char, usize) -> isize,
+
+    // int (*input_getc)(void *context, rust_input_handle_t handle);
+    input_getc: fn(*const libc::c_void, &InputHandle) -> libc::c_int,
+
+    // int (*input_ungetc)(void *context, rust_input_handle_t handle, int ch);
+    input_ungetc: fn (*const libc::c_void, &InputHandle, char) -> libc::c_int,
+
+    // int (*input_close)(void *context, rust_input_handle_t handle);
+    input_close: fn (*const libc::c_void, &InputHandle) -> libc::c_int,
 }
 
-extern {
+extern "C" {
     fn tt_get_error_message() -> *const libc::c_char;
     fn tt_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
     //fn tt_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
@@ -715,6 +754,7 @@ impl TectonicBridgeApi {
 // `kpse_file_format_type` enum in <tectonic/core-bridge.h>.
 
 #[derive(Clone,Copy,Debug)]
+#[repr(u32)]
 enum FileFormat {
     AFM,
     Bib,

@@ -8,6 +8,7 @@ extern crate gcc;
 extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
+extern crate cbindgen;
 
 use std::collections::HashMap;
 use std::env;
@@ -145,6 +146,16 @@ fn main() {
         outstem.push("stringpool_generated");
         emit_stringpool(&listfile, &outstem)
             .expect("failed to generate \"string pool\" C source code");
+    }
+
+    {
+        let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+
+        cbindgen::Builder::new()
+            .with_crate(crate_dir)
+            .generate()
+            .expect("Unable to generate bindings")
+            .write_to_file("tectonic/bindings.h");
     }
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code

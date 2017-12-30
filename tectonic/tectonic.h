@@ -6,6 +6,7 @@
 #ifndef TECTONIC_TECTONIC_H
 #define TECTONIC_TECTONIC_H
 
+#include "bindings.h"
 #include <stdbool.h>
 #include <stdint.h> /* for int32_t */
 
