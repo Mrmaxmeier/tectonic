@@ -296,6 +296,7 @@ fn main() {
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
+        .define("_DEFAULT_SOURCE", "1")
         .include(".")
         .include(&out_dir);
 

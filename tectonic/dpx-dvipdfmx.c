@@ -168,8 +168,7 @@ read_length (double *vp, const char **pp, const char *endptr)
 static void
 select_paper (const char *paperspec)
 {
-  const struct paper *pi;
-  int   error = 0;
+  int error = 0;
 
   if (paperinfo(paperspec, &paper_width, &paper_height) != 0) {
     const char  *p = paperspec, *endptr, *comma;

@@ -11,6 +11,7 @@ macro_rules! paper_sizes {
     ( $( $varname:ident: [$i:expr => $size:tt] ),* ) => (
         #[derive(Debug, Clone, Copy, PartialEq)]
         pub enum PaperSize {
+            #[allow(dead_code)]
             Custom(f64, f64),
             $( $varname ),*
         }
