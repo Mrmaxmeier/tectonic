@@ -35,7 +35,6 @@
 
 #include "core-bridge.h"
 #include "dpx-cid.h"
-#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-dvi.h"
@@ -172,11 +171,7 @@ select_paper (const char *paperspec)
   const struct paper *pi;
   int   error = 0;
 
-  pi = paperinfo(paperspec);
-  if (pi && papername(pi)) {
-    paper_width  = paperpswidth (pi);
-    paper_height = paperpsheight(pi);
-  } else {
+  if (paperinfo(paperspec, &paper_width, &paper_height) != 0) {
     const char  *p = paperspec, *endptr, *comma;
     comma  = strchr(p, ',');
     endptr = p + strlen(p);
