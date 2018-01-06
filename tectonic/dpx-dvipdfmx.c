@@ -246,16 +246,6 @@ select_pages (
   *ret_num_page_ranges = num_page_ranges;
 }
 
-static void
-system_default (void)
-{
-  if (systempapername() != NULL) {
-    select_paper(systempapername());
-  } else if (defaultpapername() != NULL) {
-    select_paper(defaultpapername());
-  }
-}
-
 #define SWAP(v1,v2) do {\
    double _tmp = (v1);\
    (v1) = (v2);\
@@ -385,8 +375,6 @@ dvipdfmx_main (
     dpx_file_set_verbose(verbose);
     tt_aux_set_verbose(verbose);
   }
-
-  system_default();
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
 

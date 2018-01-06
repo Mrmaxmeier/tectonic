@@ -55,7 +55,7 @@ pub mod digest;
 pub mod engines;
 pub mod io;
 
-mod corrode;
+pub mod corrode;
 
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;

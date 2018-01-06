@@ -11,7 +11,7 @@
 #include <string.h>
 
 int
-tt_set_int_variable (char *var_name, int value)
+tt_set_int_variable (const char *var_name, int value)
 {
     if (streq_ptr(var_name, "halt_on_error_p"))
         halt_on_error_p = value;
@@ -27,7 +27,7 @@ tt_set_int_variable (char *var_name, int value)
 
 
 int
-tt_set_string_variable (char *var_name, char *value)
+tt_set_string_variable (const char *var_name, const char *value)
 {
     if (streq_ptr(var_name, "output_comment")) {
         size_t len = strlen (value);

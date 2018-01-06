@@ -39,7 +39,7 @@ gcc = { version = "^0.3.52", features = ["parallel"] }
 pkg-config = "^0.3"
 regex = "^0.2"
 sha2 = "^0.5"
-cbindgen = "^0.3"
+cbindgen = { git = "https://github.com/Mrmaxmeier/cbindgen", branch = "void_prototype_c" }
 
 [dependencies]
 aho-corasick = "^0.6"
