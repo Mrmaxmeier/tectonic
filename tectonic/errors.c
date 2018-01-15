@@ -58,12 +58,12 @@ error(void)
 
     {
         integer hp = help_ptr;
-        string help_string = xmalloc(1024);
-        help_string[0] = NULL;
+        char* help_string = xmalloc(1024);
+        help_string[0] = '\0';
 
         while (hp > 0) {
             hp--;
-            strcat(help_string, gettexstring(help_line[hp]));
+            strcat(help_string, help_line[hp]);
             strcat(help_string, "\n");
         }
 
@@ -71,7 +71,7 @@ error(void)
         while ((level > 0) && (full_source_filename_stack[level] == 0))
             level--;
 
-        string filename = gettexstring(full_source_filename_stack[level]);
+        char* filename = gettexstring(full_source_filename_stack[level]);
         if (level > 0) {
             if (level == in_open)
                 ttstub_issue_error_at(filename, line - 1, help_string);
