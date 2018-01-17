@@ -23,6 +23,7 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 
 mod util;
 use util::{ExpectedInfo, test_path};
+use util::{assert_file_eq, read_file};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
@@ -65,7 +66,6 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
 
     Ok(SingleInputFileIo::new(&fmt_path))
 }
-
 
 struct TestCase {
     stem: String,
