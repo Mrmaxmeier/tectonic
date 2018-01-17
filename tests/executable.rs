@@ -3,6 +3,7 @@
 
 extern crate flate2;
 extern crate tempdir;
+extern crate tectonic;
 
 use std::env;
 use std::fs::{self, File};
