@@ -34,6 +34,7 @@ use tectonic::TexEngine;
 mod util;
 use util::test_path;
 
+const TOP: &str = env!("CARGO_MANIFEST_DIR");
 const DEBUG: bool = false; // TODO: this is kind of ugly
 
 

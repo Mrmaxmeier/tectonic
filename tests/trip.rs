@@ -29,6 +29,7 @@ use tectonic::TexEngine;
 
 mod util;
 use util::{ExpectedInfo, test_path};
+const TOP: &str = env!("CARGO_MANIFEST_DIR");
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
