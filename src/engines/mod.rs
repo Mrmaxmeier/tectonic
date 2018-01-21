@@ -782,3 +782,23 @@ fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
         _ => None
     }
 }
+
+
+use flame;
+#[no_mangle]
+pub extern "C" fn tt_flame_start(text: *const libc::c_char) {
+    let t = unsafe { CStr::from_ptr(text) };
+    flame::start(t.to_string_lossy());
+}
+
+#[no_mangle]
+pub extern "C" fn tt_flame_end(text: *const libc::c_char) {
+    let t = unsafe { CStr::from_ptr(text) };
+    flame::end(t.to_string_lossy());
+}
+
+#[no_mangle]
+pub extern "C" fn tt_flame_note(text: *const libc::c_char) {
+    let t = unsafe { CStr::from_ptr(text) };
+    flame::note(t.to_string_lossy(), None);
+}

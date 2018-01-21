@@ -5536,6 +5536,7 @@ restart:
                         print_char(')');
                         open_parens--;
                         ttstub_output_flush(rust_stdout);
+                        tt_flame_end(gettexstring(full_source_filename_stack[in_open]));
                     }
 
                     force_eof = false;
@@ -10736,6 +10737,7 @@ start_input(const char *primary_input_name)
         print_char(' ');
     print_char('(');
     open_parens++;
+    tt_flame_start(gettexstring(full_source_filename_stack[in_open]));
     print(full_source_filename_stack[in_open]);
     ttstub_output_flush(rust_stdout);
 

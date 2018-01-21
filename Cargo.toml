@@ -63,6 +63,8 @@ termcolor = "^0.3"
 toml = "^0.4"
 zip = "^0.2"
 
+flame = "0.2"
+
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
 # libz-sys = "^1.0"

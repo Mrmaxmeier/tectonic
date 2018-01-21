@@ -4356,8 +4356,12 @@ tt_run_engine(char *dump_name, char *input_file_name)
     no_new_control_sequence = true;
 
     if (!in_initex_mode) {
-        if (!load_fmt_file())
+        tt_flame_start("load_fmt_file");
+        if (!load_fmt_file()) {
+            tt_flame_end("load_fmt_file");
             return history;
+        }
+        tt_flame_end("load_fmt_file");
     }
 
     eqtb = the_eqtb;
@@ -4469,8 +4473,11 @@ tt_run_engine(char *dump_name, char *input_file_name)
     synctex_init_command();
     start_input(input_file_name);
     history = HISTORY_SPOTLESS;
+    tt_flame_start("main_control");
     main_control();
+    tt_flame_end("main_control");
     final_cleanup();
+    tt_flame_end(input_file_name);
     close_files_and_terminate();
     pdf_files_close();
     free(TEX_format_default);

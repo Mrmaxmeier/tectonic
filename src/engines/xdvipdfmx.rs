@@ -37,6 +37,7 @@ impl XdvipdfmxEngine {
     pub fn process (&mut self, io: &mut IoStack,
                     events: &mut IoEventBackend,
                     status: &mut StatusBackend, dvi: &str, pdf: &str) -> Result<i32> {
+        let _guard = ::flame::start_guard("XdvipdfmxEngine::process");
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 

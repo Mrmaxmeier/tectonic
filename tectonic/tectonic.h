@@ -54,6 +54,10 @@ BEGIN_EXTERN_C
 int tt_set_int_variable (char *var_name, int value);
 int tt_set_string_variable (char *var_name, char *value);
 
+extern void tt_flame_start(const char *text);
+extern void tt_flame_end(const char *text);
+extern void tt_flame_note(const char *text);
+
 END_EXTERN_C
 
 #include "constants.h"
