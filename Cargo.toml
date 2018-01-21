@@ -36,6 +36,13 @@ name = "tectonic"
 path = "src/cli_driver.rs"
 doc = false
 
+
+[[bin]]
+name = "ttincr"
+path = "src/incr.rs"
+doc = false
+
+
 [build-dependencies]
 # TODO: bump cc to 1.0.5 when released
 cc = { git = "https://github.com/alexcrichton/cc-rs", rev="a00c415929156aeba5485d7dee27f8fe1d1a69bf" }
@@ -62,6 +69,7 @@ tectonic_xdv = { path = "xdv" }
 termcolor = "^0.3"
 toml = "^0.4"
 zip = "^0.2"
+notify = "4.0.3"
 
 flame = "0.2"
 
