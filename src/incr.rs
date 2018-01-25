@@ -23,7 +23,6 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::env;
-use std::{thread, time};
 use std::time::Duration;
 use std::sync::mpsc::channel;
 
@@ -685,7 +684,7 @@ impl ProcessingSession {
             tt_note!(status, "{:?} len: {} hash: {:x}", name, contents.len(), hash);
 
             let sname = name.to_string_lossy();
-            let summ = self.events.0.get_mut(name).unwrap();
+            let summ = self.events.0.get_mut(name).expect("file without associated summary event");
 
             if !only_logs && (self.output_format == OutputFormat::Aux) {
                 // In this mode we're only writing the .aux file. I initially
@@ -1000,7 +999,6 @@ impl ProcessingSession {
     }
 }
 
-
 fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<i32> {
 
     // Create a channel to receive the events.
@@ -1017,10 +1015,10 @@ fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorSt
     let mut sess = ProcessingSession::new(&matches, &config, status)?;
     sess.run(status)?;
 
+    let is_read_from_fs = |file_summary: &FileSummary| file_summary.input_origin == InputOrigin::Filesystem &&
+            (file_summary.access_pattern == AccessPattern::Read || file_summary.access_pattern == AccessPattern::ReadThenWritten);
     for (key, file_summary) in &sess.events.0 {
-        if file_summary.input_origin == InputOrigin::Filesystem &&
-            (file_summary.access_pattern == AccessPattern::Read || file_summary.access_pattern == AccessPattern::ReadThenWritten)
-        {
+        if is_read_from_fs(file_summary) {
             tt_note!(status, "watching for changes on {:?}", key);
             if let Err(e) = watcher.watch(key, RecursiveMode::NonRecursive) {
                 println!("failed .watch for {:?} {:?}", key, e);
@@ -1037,7 +1035,23 @@ fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorSt
         sess.run(status)?;
         sess.xdvipdfmx_pass(status)?;
         flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
-        tt_note!(status, "watching for file changes...");
+
+        {
+            let first_watch = sess.events.0.iter()
+                .filter(|ref v| is_read_from_fs(&v.1))
+                .map(|(k, _)| k.to_string_lossy().to_owned())
+                .next();
+            let count = sess.events.0.iter()
+                    .filter(|ref v| is_read_from_fs(&v.1))
+                    .count();
+            if count == 1 {
+                status.note_highlighted("Watching for file changes on ", &first_watch.unwrap(), " ...")
+            } else {
+                status.note_highlighted("Watching for file changes on ", &format!("{}", count), " files ...")
+            }
+        }
+
+        sess.events.0.clear();
     }
 }
 
