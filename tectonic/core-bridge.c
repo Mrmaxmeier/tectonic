@@ -151,6 +151,28 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
     return len;
 }
 
+PRINTF_FUNC(1,2) void
+tt_flame_startf(const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
+    va_end(ap);
+    tt_flame_start(error_buf);
+}
+
+PRINTF_FUNC(1,2) void
+tt_flame_endf(const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
+    va_end(ap);
+    tt_flame_end(error_buf);
+}
+
 int
 ttstub_get_file_md5(char const *path, char *digest)
 {

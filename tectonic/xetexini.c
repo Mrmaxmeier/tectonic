@@ -2651,6 +2651,8 @@ load_fmt_file(void)
 
     /* hash table parameters */
 
+    tt_flame_start("hash table parameters");
+
     undump_int(hash_high);
     if (hash_high < 0 || hash_high > sup_hash_extra)
         goto bad_fmt;
@@ -2682,7 +2684,11 @@ load_fmt_file(void)
     max_reg_num = 32767;
     max_reg_help_line = "A register number must be between 0 and 32767.";
 
+    tt_flame_end("hash table parameters");
+
     /* "memory locations" */
+
+    tt_flame_start("memory locations");
 
     undump_int(x);
     if (x != MEM_TOP)
@@ -2705,7 +2711,11 @@ load_fmt_file(void)
     if (x != HYPH_PRIME)
         goto bad_fmt;
 
+    tt_flame_end("memory locations");
+
     /* string pool */
+
+    tt_flame_start("string pool");
 
     undump_int(x);
     if (x < 0)
@@ -2791,6 +2801,8 @@ load_fmt_file(void)
     undump_int(var_used);
     undump_int(dyn_used);
 
+    tt_flame_end("string pool");
+
     /* equivalents table / primitives
      *
      * "The table of equivalents usually contains repeated information, so we
@@ -2799,6 +2811,8 @@ load_fmt_file(void)
      * entries of |eqtb|, with |m| extra copies of $x_n$, namely
      * $(x_1, \ldots, x_n, x_n, \ldots, x_n)$"
      */
+
+    tt_flame_start("eqtb / prim");
 
     k = ACTIVE_BASE;
 
@@ -2837,6 +2851,8 @@ load_fmt_file(void)
     else
         write_loc = x;
 
+    tt_flame_end("eqtb / prim");
+
     /* control sequence names
      *
      * "A different scheme is used to compress the hash table, since its lower
@@ -2845,6 +2861,8 @@ load_fmt_file(void)
      * densely packed for |p >= hash_used|, so the remaining entries are
      * output in a block."
      */
+
+    tt_flame_start("control sequence names");
 
     for (p = 0; p <= PRIM_SIZE; p++)
         undump_b32(prim[p]);
@@ -2876,7 +2894,11 @@ load_fmt_file(void)
 
     undump_int(cs_count);
 
+    tt_flame_end("control sequence names");
+
     /* font info */
+
+    tt_flame_start("font info");
 
     undump_int(x);
     if (x < 7)
@@ -2954,7 +2976,11 @@ load_fmt_file(void)
     undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE], font_ptr + 1);
     undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE], font_ptr + 1);
 
+    tt_flame_end("font info");
+
     /* hyphenations */
+
+    tt_flame_start("hyphenations");
 
     undump_int(x);
     if (x < 0)
@@ -3075,6 +3101,8 @@ load_fmt_file(void)
     }
 
     trie_not_ready = false;
+
+    tt_flame_end("hyphenations");
 
     /* trailer */
 

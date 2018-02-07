@@ -310,6 +310,7 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
         double w, h, xo, yo;
         int    lm;
 
+        tt_flame_start("xdvipdfmx page");
         dpx_message("[%d", page_no+1);
         /* Users want to change page size even after page is started! */
         page_width = paper_width; page_height = paper_height;
@@ -339,6 +340,7 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
         dvi_do_page(page_height, x_offset, y_offset);
         page_count++;
         dpx_message("]");
+        tt_flame_end("xdvipdfmx page");
       }
 
       if (step > 0 &&

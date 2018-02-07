@@ -49,7 +49,7 @@ extern crate termcolor;
 extern crate toml;
 extern crate zip;
 
-extern crate flame;
+extern crate trace_events;
 
 #[macro_use] pub mod status;
 #[macro_use] pub mod errors;

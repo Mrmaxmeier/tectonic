@@ -221,6 +221,7 @@ static int
 load_image (const char *ident, const char *fullname, int format, rust_input_handle_t handle,
             load_options options)
 {
+    tt_flame_startf("load_image %s", ident);
     struct ic_ *ic = &_ic;
     int id = -1;
     pdf_ximage *I;
@@ -312,6 +313,8 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     default:
         _tt_abort("Unknown XObject subtype: %d", I->subtype);
     }
+
+    tt_flame_endf("load_image %s", ident);
 
     ic->count++;
     return id;

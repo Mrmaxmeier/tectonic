@@ -97,7 +97,7 @@ impl TexEngine {
                     events: &mut IoEventBackend,
                     status: &mut StatusBackend,
                     format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
-        let _guard = ::flame::start_guard("TeXEngine::process");
+        let _guard = ::trace_events::guard("TeXEngine::process");
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 

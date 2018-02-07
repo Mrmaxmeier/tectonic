@@ -1081,6 +1081,7 @@ static void
 read_image_data (png_structp png_ptr, png_bytep dest_ptr,
                  png_uint_32 height, png_uint_32 rowbytes)
 {
+    tt_flame_start("pngimage/read_image_data");
     png_bytepp  rows_p;
     png_uint_32 i;
 
@@ -1089,6 +1090,7 @@ read_image_data (png_structp png_ptr, png_bytep dest_ptr,
         rows_p[i] = dest_ptr + (rowbytes * i);
     png_read_image(png_ptr, rows_p);
     free(rows_p);
+    tt_flame_end("pngimage/read_image_data");
 }
 
 int

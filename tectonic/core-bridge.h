@@ -97,6 +97,8 @@ NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
 PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
+PRINTF_FUNC(1,2) void tt_flame_startf(const char *format, ...);
+PRINTF_FUNC(1,2) void tt_flame_endf(const char *format, ...);
 
 int ttstub_get_file_md5 (char const *path, char *digest);
 int ttstub_get_data_md5 (char const *data, size_t len, char *digest);

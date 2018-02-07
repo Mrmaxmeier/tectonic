@@ -71,7 +71,7 @@ toml = "^0.4"
 zip = "^0.2"
 notify = "4.0.3"
 
-flame = "0.2"
+trace_events = { path = "/home/mrmaxmeier/_GitRepos/trace_events"}
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"

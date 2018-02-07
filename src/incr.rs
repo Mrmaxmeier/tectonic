@@ -9,7 +9,7 @@ extern crate termcolor;
 extern crate sha2;
 extern crate notify;
 
-extern crate flame;
+extern crate trace_events;
 
 use sha2::{Sha256, Digest};
 
@@ -1026,15 +1026,14 @@ fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorSt
         }
     }
 
+    let _tracing_guard = trace_events::initialize();
     loop {
         match rx.recv() {
             Ok(event) => println!("{:?}", event),
             Err(e) => println!("watch error: {:?}", e),
         }
-        flame::clear();
         sess.run(status)?;
         sess.xdvipdfmx_pass(status)?;
-        flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
 
         {
             let first_watch = sess.events.0.iter()

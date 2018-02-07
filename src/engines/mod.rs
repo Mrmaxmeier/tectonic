@@ -784,21 +784,25 @@ fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
 }
 
 
-use flame;
+use trace_events;
+use trace_events::Event;
 #[no_mangle]
 pub extern "C" fn tt_flame_start(text: *const libc::c_char) {
     let t = unsafe { CStr::from_ptr(text) };
-    flame::start(t.to_string_lossy());
+    trace_events::dispatch(&Event::start(&t.to_string_lossy()));
 }
 
 #[no_mangle]
 pub extern "C" fn tt_flame_end(text: *const libc::c_char) {
     let t = unsafe { CStr::from_ptr(text) };
-    flame::end(t.to_string_lossy());
+    trace_events::dispatch(&Event::end(&t.to_string_lossy()));
 }
 
 #[no_mangle]
 pub extern "C" fn tt_flame_note(text: *const libc::c_char) {
     let t = unsafe { CStr::from_ptr(text) };
-    flame::note(t.to_string_lossy(), None);
+    // TODO
+    trace_events::dispatch(&Event::start(&t.to_string_lossy()));
+    trace_events::dispatch(&Event::end(&t.to_string_lossy()));
+    // flame::note(t.to_string_lossy(), None);
 }
