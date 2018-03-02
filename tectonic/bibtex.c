@@ -3520,8 +3520,8 @@ static void x_concatenate(void)
                 else {
 
                     {
-                        while ((pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) +
-                                (str_start[pop_lit2 + 1] - str_start[pop_lit2]) > pool_size))
+                        while (pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) +
+                                (str_start[pop_lit2 + 1] - str_start[pop_lit2]) > pool_size)
                             pool_overflow();
                     }
                     sp_ptr = str_start[pop_lit2];
@@ -7018,10 +7018,9 @@ setup_params(void)
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;
     max_strings = MAX_STRINGS;
+    hash_size = HASH_SIZE;
+    assert(hash_size > 5000);
 
-    hash_size = max_strings;
-    if (hash_size < 5000 /*HASH_SIZE */ )
-        hash_size = 5000 /*HASH_SIZE */ ;
     hash_max = hash_size + hash_base - 1;
     end_of_def = hash_max + 1;
     undefined = hash_max + 1;

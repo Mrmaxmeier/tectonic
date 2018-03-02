@@ -518,6 +518,7 @@ otl_find_conf (const char *conf_name)
   pdf_obj *script, *language;
   pdf_obj *options;
 
+  // TODO: why is this unreachable?
   return  NULL;
 
   if (otl_confs)
