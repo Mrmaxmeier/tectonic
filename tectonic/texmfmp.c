@@ -54,23 +54,7 @@ maketexstring(const char *s)
   checkpool_pointer (pool_ptr, len); /* in the XeTeX case, this may be more than enough */
 
   while ((rval = *(cp++)) != 0) {
-    UInt16 extraBytes = bytesFromUTF8[rval];
-    switch (extraBytes) { /* note: code falls through cases! */
-      case 5: rval <<= 6; if (*cp) rval += *(cp++);
-      case 4: rval <<= 6; if (*cp) rval += *(cp++);
-      case 3: rval <<= 6; if (*cp) rval += *(cp++);
-      case 2: rval <<= 6; if (*cp) rval += *(cp++);
-      case 1: rval <<= 6; if (*cp) rval += *(cp++);
-      case 0: ;
-    };
-    rval -= offsetsFromUTF8[extraBytes];
-    if (rval > 0xffff) {
-      rval -= 0x10000;
-      str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
-      str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
-    }
-    else
-      str_pool[pool_ptr++] = rval;
+    str_pool[pool_ptr++] = rval;
   }
 
   return make_string();
@@ -96,42 +80,55 @@ gettexstring (str_number s)
   else
       len = 0;
 
-  name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
-                                  (code units, not bytes) */
-  for (i = 0, j = 0; i < len; i++) {
-    uint32_t c = str_pool[i + str_start[s - 65536L]];
-    if (c >= 0xD800 && c <= 0xDBFF) {
-      uint32_t lo = str_pool[++i + str_start[s - 65536L]];
-      if (lo >= 0xDC00 && lo <= 0xDFFF)
-        c = (c - 0xD800) * 0x0400 + lo - 0xDC00 + 0x10000;
-      else
-        c = 0xFFFD;
-    }
+  name = xmalloc(len + 1);
+  memcpy(name, str_pool + str_start[s - 65536L], len);
+  name[len] = '\0';
 
-    if (c < 0x80)
-      bytesToWrite = 1;
-    else if (c < 0x800)
-      bytesToWrite = 2;
-    else if (c < 0x10000)
-      bytesToWrite = 3;
-    else if (c < 0x110000)
-      bytesToWrite = 4;
-    else {
-      bytesToWrite = 3;
-      c = 0xFFFD;
-    }
-
-    j += bytesToWrite;
-    switch (bytesToWrite) { /* note: everything falls through. */
-      case 4: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 3: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 2: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 1: name[--j] =  (c | firstByteMark[bytesToWrite]);
-    }
-    j += bytesToWrite;
-  }
-  name[j] = 0;
   return name;
+}
+
+
+int32_t
+get_uchar(UTF8_code * buf, unsigned int * ptr)
+{
+  int32_t cp = (int32_t) buf[(*ptr)++];
+
+  int length = 1;
+  unsigned int mask = 0;
+  int lower_bound = 0;
+  if ((cp & 0x80) == 0) {
+    mask = 0x7f;
+    length = 1;
+    lower_bound = 0;
+  } else if ((cp & 0xe0) == 0xc0) {
+    mask = 0x1f;
+    length = 2;
+    lower_bound = 0x80;
+  } else if ((cp & 0xf0) == 0xe0) {
+    mask = 0x0f;
+    length = 3;
+    lower_bound = 0x800;
+  } else if ((cp & 0xf8) == 0xf0) {
+    mask = 0x07;
+    length = 4;
+    lower_bound = 0x10000;
+  } else {
+    return 0xFFFD;
+  }
+
+  cp &= mask;
+  for (int i = 1; i < length; i++) {
+    unsigned char c = buf[(*ptr)++];
+    if ((c & 0xC0) != 0x80)
+            return 0xFFFD;
+    cp = (cp << 6) | (c & 0x3F);
+  }
+
+  if (cp < lower_bound) {
+    return 0xFFFD;
+  }
+
+  return cp;
 }
 
 

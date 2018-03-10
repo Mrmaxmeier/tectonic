@@ -478,9 +478,10 @@ line_break(bool d)
                                 } else {
                                     hn++;
 
-                                    if (c < 65536L) {
+                                    //if (c < 65536L) {
                                         hu[hn] = c;
                                         hc[hn] = hc[0];
+                                    /*
                                     } else {
                                         hu[hn] = (c - 65536L) / 1024 + 0xD800;
                                         hc[hn] = (hc[0] - 65536L) / 1024 + 0xD800;
@@ -489,6 +490,7 @@ line_break(bool d)
                                         hc[hn] = hc[0] % 1024 + 0xDC00;
                                         l++;
                                     }
+                                    */
 
                                     hyf_bchar = TOO_BIG_CHAR;
                                 }

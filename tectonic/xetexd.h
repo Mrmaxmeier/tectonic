@@ -307,6 +307,7 @@ void get_date_and_time (int32_t *, int32_t *, int32_t *, int32_t *);
 
 str_number make_full_name_string(void);
 char *gettexstring(str_number);
+int32_t get_uchar(UTF8_code * buf, unsigned int * ptr);
 bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
 void remember_source_info(str_number, int);
@@ -318,9 +319,7 @@ extern memory_word *eqtb;
 
 extern int32_t bad;
 extern char *name_of_file;
-extern UTF16_code *name_of_file16;
 extern int32_t name_length;
-extern int32_t name_length16;
 extern UnicodeScalar *buffer;
 extern int32_t first;
 extern int32_t last;
@@ -353,7 +352,7 @@ extern bool insert_src_special_auto;
 extern bool insert_src_special_every_par;
 extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
-extern packed_UTF16_code *str_pool;
+extern UTF8_code *str_pool;
 extern pool_pointer *str_start;
 extern pool_pointer pool_ptr;
 extern str_number str_ptr;

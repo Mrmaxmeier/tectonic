@@ -473,45 +473,6 @@ get_uni_c(UFILE* f)
 
 
 void
-make_utf16_name(void)
-{
-    unsigned char* s = (unsigned char *) name_of_file;
-    uint32_t rval;
-    uint16_t* t;
-    static int name16len = 0;
-    if (name16len <= name_length) {
-        free(name_of_file16);
-        name16len = name_length + 10;
-        name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
-    }
-    t = name_of_file16;
-
-    while (s < name_of_file + name_length) {
-        uint16_t extraBytes;
-        rval = *(s++);
-        extraBytes = bytesFromUTF8[rval];
-        switch (extraBytes) {   /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*s) rval += *(s++);
-            case 4: rval <<= 6; if (*s) rval += *(s++);
-            case 3: rval <<= 6; if (*s) rval += *(s++);
-            case 2: rval <<= 6; if (*s) rval += *(s++);
-            case 1: rval <<= 6; if (*s) rval += *(s++);
-            case 0: ;
-        };
-        rval -= offsetsFromUTF8[extraBytes];
-        if (rval > 0xffff) {
-            rval -= 0x10000;
-            *(t++) = 0xd800 + rval / 0x0400;
-            *(t++) = 0xdc00 + rval % 0x0400;
-        } else {
-            *(t++) = rval;
-        }
-    }
-    name_length16 = t - name_of_file16;
-}
-
-
-void
 open_or_close_in(void)
 {
     unsigned char c, n;
@@ -533,12 +494,11 @@ open_or_close_in(void)
 
         if (u_open_in(&read_file[n], TTIF_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
-            make_utf16_name();
             name_in_progress = true;
             begin_name();
             stop_at_space = false;
             k = 0;
-            while ((k < name_length16) && (more_name(name_of_file16[k])))
+            while ((k < name_length) && (more_name(name_of_file[k])))
                 k++;
             stop_at_space = true;
             end_name();

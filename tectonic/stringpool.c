@@ -65,20 +65,15 @@ str_number make_string(void)
 
 void append_str(str_number s)
 {
-    int32_t i;
-    pool_pointer j;
-    i = length(s);
-    {
-        if (pool_ptr + i > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
-    j = str_start[(s) - 65536L];
-    while ((i > 0)) {
+    int32_t i = length(s);
+    pool_pointer j = str_start[s - 65536L];
 
-        {
-            str_pool[pool_ptr] = str_pool[j];
-            pool_ptr++;
-        }
+    if (pool_ptr + i > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
+    while (i > 0) {
+        str_pool[pool_ptr] = str_pool[j];
+        pool_ptr++;
         j++;
         i--;
     }

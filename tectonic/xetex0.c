@@ -3727,15 +3727,8 @@ id_lookup(int32_t j, int32_t l)
                 }
 
                 for (k = j; k <= j + l - 1; k++) {
-                    if (buffer[k] < 65536L) {
-                        str_pool[pool_ptr] = buffer[k];
-                        pool_ptr++;
-                    } else {
-                        str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
-                        pool_ptr++;
-                        str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
-                        pool_ptr++;
-                    }
+                    str_pool[pool_ptr] = buffer[k];
+                    pool_ptr++;
                 }
 
                 hash[p].s1 = make_string();
@@ -3781,10 +3774,8 @@ int32_t prim_lookup(str_number s)
             if (k <= for_end)
                 do {
                     h = h + h + str_pool[k];
-                    while (h >= PRIM_PRIME)
-                        h = h - 431;
-                }
-                while (k++ < for_end);
+                    h = h % PRIM_PRIME;
+                } while (k++ < for_end);
         }
         p = h + 1;
     }
@@ -9125,6 +9116,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             t = SPACE_TOKEN;
         else {
 
+            // TODO: get_uchar
             if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
                 && (str_pool[k + 1] < 0xE000)) {
                 k++;
@@ -10545,10 +10537,8 @@ make_name_string(void)
     if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
         return '?';
 
-    make_utf16_name();
-
-    for (k = 0; k < name_length16; k++)
-        str_pool[pool_ptr++] = name_of_file16[k];
+    for (k = 0; k < name_length; k++)
+        str_pool[pool_ptr++] = name_of_file[k];
 
 
     str_number Result = make_string();
@@ -10562,7 +10552,7 @@ make_name_string(void)
     stop_at_space = false;
     k = 0;
 
-    while (k < name_length16 && more_name(name_of_file16[k]))
+    while (k < name_length && more_name(name_of_file[k]))
         k++;
 
     stop_at_space = save_stop_at_space;
@@ -10678,23 +10668,7 @@ start_input(const char *primary_input_name)
 
         UInt32 rval;
         while ((rval = *(cp++)) != 0) {
-            UInt16 extraBytes = bytesFromUTF8[rval];
-            switch (extraBytes) { /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*cp) rval += *(cp++);
-            case 4: rval <<= 6; if (*cp) rval += *(cp++);
-            case 3: rval <<= 6; if (*cp) rval += *(cp++);
-            case 2: rval <<= 6; if (*cp) rval += *(cp++);
-            case 1: rval <<= 6; if (*cp) rval += *(cp++);
-            case 0: ;
-            };
-            rval -= offsetsFromUTF8[extraBytes];
-            if (rval > 0xffff) {
-                rval -= 0x10000;
-                str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
-                str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
-            } else {
-                str_pool[pool_ptr++] = rval;
-            }
+            str_pool[pool_ptr++] = rval;
 
             if (IS_DIR_SEP(rval)) {
                 area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
@@ -10728,12 +10702,11 @@ start_input(const char *primary_input_name)
     /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
      * and use that to recompute `cur_{name,area,ext}`. */
 
-    make_utf16_name();
     name_in_progress = true;
     begin_name();
     stop_at_space = false;
     int k = 0;
-    while (k < name_length16 && more_name(name_of_file16[k]))
+    while (k < name_length && more_name(name_of_file[k]))
         k++;
     stop_at_space = true;
     end_name();
@@ -10752,6 +10725,8 @@ start_input(const char *primary_input_name)
      * kpathsea; in Tectonic, it is the same as `name_of_file`. */
 
     full_source_filename_stack[in_open] = make_full_name_string();
+    printf("full_source top %s\n", gettexstring(full_source_filename_stack[in_open]));
+    print(full_source_filename_stack[in_open]);
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
@@ -10917,18 +10892,9 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         i = 0;
 
         while (i < len) {
-            if (mapped_text[i] >= 0xD800 && mapped_text[i] < 0xDC00) {
-                c = (mapped_text[i] - 0xD800) * 1024 + mapped_text[i + 1] + 9216;
-                if (map_char_to_glyph(f, c) == 0)
-                    char_warning(f, c);
-
-                i += 2;
-            } else {
-                if (map_char_to_glyph(f, mapped_text[i]) == 0)
-                    char_warning(f, mapped_text[i]);
-
-                i += 1;
-            }
+            c = get_uchar(mapped_text, &i);
+            if (map_char_to_glyph(f, mapped_text[i]) == 0)
+                char_warning(f, mapped_text[i]);
         }
 
         p = new_native_word_node(f, len);
@@ -18602,13 +18568,8 @@ reswitch:
             temp_ptr = 0;
             while ((temp_ptr < native_len)) {
 
-                main_k = native_text[temp_ptr];
-                temp_ptr++;
-                if ((main_k >= 0xD800) && (main_k < 0xDC00)) {
-                    main_k = 65536L + (main_k - 0xD800) * 1024;
-                    main_k = main_k + native_text[temp_ptr] - 0xDC00;
-                    temp_ptr++;
-                }
+                main_k = get_uchar(native_text, &temp_ptr);
+
                 if (map_char_to_glyph(main_f, main_k) == 0)
                     char_warning(main_f, main_k);
             }

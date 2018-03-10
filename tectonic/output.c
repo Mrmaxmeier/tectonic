@@ -193,8 +193,9 @@ print(int32_t s)
     }
 
     int32_t pool_idx = s - 0x10000;
-
-    for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
+    pool_pointer i = str_start[pool_idx];
+    while (i < str_start[pool_idx + 1]) {
+        /*
         if (
             (str_pool[i] >= 0xD800) &&
             (str_pool[i] < 0xDC00) &&
@@ -211,6 +212,9 @@ print(int32_t s)
         } else {
             print_char(str_pool[i]);
         }
+        */
+        int32_t c = get_uchar(str_pool, &i);
+        print_char(c);
     }
 }
 

@@ -14,9 +14,7 @@
 memory_word *eqtb;
 int32_t bad;
 char *name_of_file;
-UTF16_code *name_of_file16;
 int32_t name_length;
-int32_t name_length16;
 UnicodeScalar *buffer;
 int32_t first;
 int32_t last;
@@ -49,7 +47,7 @@ bool insert_src_special_auto;
 bool insert_src_special_every_par;
 bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
-packed_UTF16_code *str_pool;
+UTF8_code *str_pool;
 pool_pointer *str_start;
 pool_pointer pool_ptr;
 str_number str_ptr;
