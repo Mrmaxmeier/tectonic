@@ -55,7 +55,7 @@ show_token_list(int32_t p, int32_t q, int32_t l)
 {
     int32_t m, c;
     int32_t match_chr;
-    UTF16_code n;
+    uchar_t n;
 
     match_chr = '#' ;
     n = '0' ;
@@ -641,7 +641,7 @@ void print_delimiter(int32_t p)
 
 
 void
-print_subsidiary_data(int32_t p, UTF16_code c)
+print_subsidiary_data(int32_t p, uchar_t c)
 {
 
     if (pool_ptr - str_start[str_ptr - 65536L] >= depth_threshold) {
@@ -2194,7 +2194,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 {
     int32_t n;
     str_number font_name_str;
-    UTF16_code quote_char;
+    uchar_t quote_char;
 
     switch (cmd) {
     case LEFT_BRACE:
@@ -3669,27 +3669,20 @@ id_lookup(int32_t j, int32_t l)
     int32_t d;
     int32_t p;
     int32_t k;
-    int32_t ll;
 
     h = 0;
 
     for (k = j; k <= j + l - 1; k++) {
         h = h + h + buffer[k];
         while (h >= HASH_PRIME)
-            h = h - 8501;
+            h = h - HASH_PRIME;
     }
 
     p = h + HASH_BASE;
-    ll = l;
-
-    for (d = 0; d <= l - 1; d++) {
-        if (buffer[j + d] >= 65536L)
-            ll++;
-    }
 
     while (true) {
         if (hash[p].s1 > 0) {
-            if (length(hash[p].s1) == ll) {
+            if (length(hash[p].s1) == l) {
                 if (str_eq_buf(hash[p].s1, j))
                     goto found;
             }
@@ -3716,7 +3709,7 @@ id_lookup(int32_t j, int32_t l)
                     }
                 }
 
-                if (pool_ptr + ll > pool_size)
+                if (pool_ptr + l > pool_size)
                     overflow("pool size", pool_size - init_pool_ptr);
 
                 d = pool_ptr - str_start[str_ptr - 65536L];
@@ -5104,8 +5097,8 @@ get_next(void)
     int32_t k;
     int32_t t;
     unsigned char /*max_char_code */ cat;
-    UnicodeScalar c;
-    UTF16_code lower;
+    uchar_t c;
+    // UTF16_code lower;
     small_number d;
     small_number sup_count;
 
@@ -5115,15 +5108,8 @@ restart:
     if (cur_input.state != TOKEN_LIST) { /*355:*/
     texswitch:
         if (cur_input.loc <= cur_input.limit) {
-            cur_chr = buffer[cur_input.loc];
-            cur_input.loc++;
-
-            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input.loc <= cur_input.limit &&
-                buffer[cur_input.loc] >= 0xDC00 && buffer[cur_input.loc] < 0xE000) {
-                lower = buffer[cur_input.loc] - 0xDC00;
-                cur_input.loc++;
-                cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
-            }
+            // TODO: respect cur_input.limit
+            cur_chr = get_uchar(buffer, &cur_input.loc);
 
         reswitch:
             cur_cmd = CAT_CODE(cur_chr);
@@ -5621,7 +5607,7 @@ macro_call(void)
     int32_t ref_count;
     small_number save_scanner_status;
     int32_t save_warning_index;
-    UTF16_code match_chr;
+    uchar_t match_chr;
 
     save_scanner_status = scanner_status;
     save_warning_index = warning_index;
@@ -9100,7 +9086,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
 {
     int32_t p;
     int32_t q;
-    int32_t t;
+    uchar_t t;
     pool_pointer k;
     {
         if (pool_ptr + 1 > pool_size)
@@ -9110,18 +9096,19 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
     mem[p].b32.s1 = TEX_NULL;
     k = b;
     while (k < pool_ptr) {
-
-        t = str_pool[k];
+        t = get_uchar(str_pool, &k);
+        // t = str_pool[k];
         if ((t == ' ' ) && (cat == 0))
             t = SPACE_TOKEN;
         else {
-
+            /*
             // TODO: get_uchar
             if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
                 && (str_pool[k + 1] < 0xE000)) {
                 k++;
                 t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
             }
+            */
             if (cat == 0)
                 t = OTHER_TOKEN + t;
             else
@@ -9142,7 +9129,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             mem[q].b32.s0 = t;
             p = q;
         }
-        k++;
+        // k++;
     }
     pool_ptr = b;
     return p;
@@ -9264,9 +9251,9 @@ conv_toks(void)
     int32_t fnt = 0, arg1 = 0, arg2 = 0;
     str_number font_name_str;
     small_number i;
-    UTF16_code quote_char;
+    uchar_t quote_char;
     small_number cat;
-    UnicodeScalar saved_chr;
+    uchar_t saved_chr;
     int32_t p = TEX_NULL, q;
 
     cat = 0;
@@ -10402,7 +10389,7 @@ begin_name(void)
 
 
 bool
-more_name(UTF16_code c)
+more_name(uchar_t c)
 {
     if (stop_at_space && file_name_quote_char == 0 && c == ' ' )
         return false;
@@ -10725,8 +10712,6 @@ start_input(const char *primary_input_name)
      * kpathsea; in Tectonic, it is the same as `name_of_file`. */
 
     full_source_filename_stack[in_open] = make_full_name_string();
-    printf("full_source top %s\n", gettexstring(full_source_filename_stack[in_open]));
-    print(full_source_filename_stack[in_open]);
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
@@ -10841,7 +10826,8 @@ new_native_word_node(internal_font_number f, int32_t n)
     int32_t l;
     int32_t q;
 
-    l = NATIVE_NODE_SIZE + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
+    // TODO: sizeof(uchar_t) is probably wrong
+    l = NATIVE_NODE_SIZE + (n * sizeof(uchar_t) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
     NODE_type(q) = WHATSIT_NODE;
 
@@ -10860,7 +10846,7 @@ new_native_word_node(internal_font_number f, int32_t n)
 
 
 int32_t
-new_native_character(internal_font_number f, UnicodeScalar c)
+new_native_character(internal_font_number f, uchar_t c)
 {
     int32_t p;
     int32_t i, len;
@@ -10870,6 +10856,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
             if (pool_ptr + 2 > pool_size)
                 overflow("pool size", pool_size - init_pool_ptr);
 
+            // TODO: encode c as utf8
             str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
             pool_ptr++;
             str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
@@ -10892,9 +10879,10 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         i = 0;
 
         while (i < len) {
-            c = get_uchar(mapped_text, &i);
+            c = mapped_text[i++]; // get_uchar(mapped_text, &i);
             if (map_char_to_glyph(f, mapped_text[i]) == 0)
                 char_warning(f, mapped_text[i]);
+            // TODO: i++ should probably happen here
         }
 
         p = new_native_word_node(f, len);
@@ -10916,6 +10904,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         if (c > 65535L) {
             mem[p + 4].b16.s1 = 2;
+            // TODO: utf16 stuff
             NATIVE_NODE_text(p)[0] = (c - 65536L) / 1024 + 0xD800;
             NATIVE_NODE_text(p)[1] = (c - 65536L) % 1024 + 0xDC00;
         } else {
@@ -11722,7 +11711,7 @@ done:
     return g;
 }
 
-int32_t new_character(internal_font_number f, UTF16_code c)
+int32_t new_character(internal_font_number f, uchar_t c)
 {
     int32_t p;
     uint16_t ec;
@@ -17467,7 +17456,7 @@ void do_extension(void)
 
 void fix_language(void)
 {
-    UTF16_code l;
+    uchar_t l;
 
     if (INTPAR(language) <= 0)
         l = 0;
@@ -18478,32 +18467,14 @@ reswitch:
             }
             prev_class = space_class;
         }
-        if ((cur_chr > 65535L)) {
-            while (native_text_size <= native_len + 2) {
 
-                native_text_size = native_text_size + 128;
-                native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
-            }
-            {
-                native_text[native_len] = (cur_chr - 65536L) / 1024 + 0xD800;
-                native_len++;
-            }
-            {
-                native_text[native_len] = (cur_chr - 65536L) % 1024 + 0xDC00;
-                native_len++;
-            }
-        } else {
-
-            while (native_text_size <= native_len + 1) {
-
-                native_text_size = native_text_size + 128;
-                native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
-            }
-            {
-                native_text[native_len] = cur_chr;
-                native_len++;
-            }
+        while (native_text_size <= native_len + 1) {
+            native_text_size = native_text_size + 128;
+            native_text = xrealloc(native_text, native_text_size * sizeof(uchar_t));
         }
+        native_text[native_len] = cur_chr;
+        native_len++;
+
         is_hyph = (cur_chr == hyphen_char[main_f]) || ((INTPAR(xetex_dash_break) > 0)
                                                        && ((cur_chr == 8212) || (cur_chr == 8211)));
         if ((main_h == 0) && is_hyph)
@@ -18542,7 +18513,7 @@ reswitch:
             while (native_text_size <= native_len + main_k) {
 
                 native_text_size = native_text_size + 128;
-                native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
+                native_text = xrealloc(native_text, native_text_size * sizeof(UTF8_code));
             }
             main_h = 0;
             {
@@ -18551,14 +18522,12 @@ reswitch:
                 for_end = main_k - 1;
                 if (main_p <= for_end)
                     do {
-                        {
-                            native_text[native_len] = mapped_text[main_p];
-                            native_len++;
-                        }
+                        native_text[native_len] = mapped_text[main_p];
+                        native_len++;
                         if ((main_h == 0)
                             && ((mapped_text[main_p] == hyphen_char[main_f])
                                 || ((INTPAR(xetex_dash_break) > 0)
-                                    && ((mapped_text[main_p] == 8212) || (mapped_text[main_p] == 8211)))))
+                                    && ((mapped_text[main_p] == 8212 /* '—' */) || (mapped_text[main_p] == 8211 /* '–' */)))))
                             main_h = native_len;
                     }
                     while (main_p++ < for_end);
@@ -18568,7 +18537,10 @@ reswitch:
             temp_ptr = 0;
             while ((temp_ptr < native_len)) {
 
-                main_k = get_uchar(native_text, &temp_ptr);
+                // main_k = get_uchar(native_text, &temp_ptr);
+                main_k = native_text[temp_ptr];
+                temp_ptr++;
+                printf("read from native_text: %c\n", main_k);
 
                 if (map_char_to_glyph(main_f, main_k) == 0)
                     char_warning(main_f, main_k);
@@ -18610,7 +18582,7 @@ reswitch:
                     while (native_text_size <= native_len + main_k) {
 
                         native_text_size = native_text_size + 128;
-                        native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
+                        native_text = xrealloc(native_text, native_text_size * sizeof(UTF8_code));
                     }
                     save_native_len = native_len;
                     {

@@ -76,7 +76,7 @@ line_break(bool d)
     int32_t q, r, s, prev_s;
     internal_font_number f;
     small_number j;
-    UnicodeScalar c;
+    uchar_t c;
     int32_t l;
     int32_t i;
     int32_t for_end_1;
@@ -478,6 +478,7 @@ line_break(bool d)
                                 } else {
                                     hn++;
 
+                                    // TODO: utf16 encoded stuff
                                     //if (c < 65536L) {
                                         hu[hn] = c;
                                         hc[hn] = hc[0];
@@ -1858,7 +1859,7 @@ hyphenate(void)
     int32_t q, r, s;
     int32_t bchar;
     int32_t major_tail, minor_tail;
-    UnicodeScalar c = 0;
+    uchar_t c = 0;
     short /*hyphenatable_length_limit */ c_loc;
     int32_t r_count;
     int32_t hyf_node;

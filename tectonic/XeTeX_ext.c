@@ -170,6 +170,7 @@ get_encoding_mode_and_info(int32_t* info)
     }
 }
 
+// TODO: sort this out
 void
 print_utf8_str(const unsigned char* str, int len)
 {

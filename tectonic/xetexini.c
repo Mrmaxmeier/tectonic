@@ -15,7 +15,7 @@ memory_word *eqtb;
 int32_t bad;
 char *name_of_file;
 int32_t name_length;
-UnicodeScalar *buffer;
+UTF8_code *buffer;
 int32_t first;
 int32_t last;
 int32_t max_buf_stack;
@@ -60,11 +60,11 @@ unsigned char dig[23];
 int32_t tally;
 int32_t term_offset;
 int32_t file_offset;
-UTF16_code trick_buf[256];
+UTF8_code trick_buf[256];
 int32_t trick_count;
 int32_t first_count;
 bool doing_special;
-UTF16_code *native_text;
+uchar_t *native_text;
 int32_t native_text_size;
 int32_t native_len;
 int32_t save_native_len;
@@ -73,7 +73,7 @@ bool deletions_allowed;
 bool set_box_allowed;
 tt_history_t history;
 signed char error_count;
-const char* help_line[6];
+const char * help_line[6];
 unsigned char help_ptr;
 bool use_err_help;
 bool arith_error;
@@ -167,7 +167,7 @@ str_number cur_area;
 str_number cur_ext;
 pool_pointer area_delimiter;
 pool_pointer ext_delimiter;
-UTF16_code file_name_quote_char;
+uchar_t file_name_quote_char;
 int32_t format_default_length;
 char *TEX_format_default;
 bool name_in_progress;
@@ -185,8 +185,8 @@ scaled_t *font_dsize;
 font_index *font_params;
 str_number *font_name;
 str_number *font_area;
-UTF16_code *font_bc;
-UTF16_code *font_ec;
+uchar_t *font_bc;
+uchar_t *font_ec;
 int32_t *font_glue;
 bool *font_used;
 int32_t *hyphen_char;
@@ -202,7 +202,7 @@ void *loaded_font_mapping;
 char loaded_font_flags;
 scaled_t loaded_font_letter_space;
 scaled_t loaded_font_design_size;
-UTF16_code *mapped_text;
+uchar_t *mapped_text;
 char *xdv_buffer;
 int32_t *char_base;
 int32_t *width_base;
@@ -272,7 +272,7 @@ unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
 trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 int32_t trie_op_ptr;
 trie_opcode max_op_used;
-packed_UTF16_code *trie_c;
+UTF8_code *trie_c;
 trie_opcode *trie_o;
 trie_pointer *trie_l;
 trie_pointer *trie_r;
@@ -702,7 +702,7 @@ void first_fit(trie_pointer p)
     trie_pointer h;
     trie_pointer z;
     trie_pointer q;
-    UTF16_code c;
+    uchar_t c;
     trie_pointer l, r;
     int32_t /*too_big_char */ ll;
     c = trie_c[p];
@@ -772,7 +772,7 @@ void trie_pack(trie_pointer p)
 void trie_fix(trie_pointer p)
 {
     trie_pointer q;
-    UTF16_code c;
+    uchar_t c;
     trie_pointer z;
     z = trie_hash[p];
     do {
@@ -795,7 +795,7 @@ new_patterns(void)
     trie_opcode v;
     trie_pointer p, q;
     bool first_child;
-    UTF16_code c;
+    uchar_t c;
 
     if (trie_not_ready) {
         if (INTPAR(language) <= 0)
@@ -2646,7 +2646,7 @@ load_fmt_file(void)
 
     str_start = xmalloc_array(pool_pointer, max_strings);
     undump_checked_things(0, pool_ptr, str_start[(TOO_BIG_CHAR) - 65536L], str_ptr - 65535L);
-    str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+    str_pool = xmalloc_array(UTF8_code, pool_size);
 
     undump_things(str_pool[0], pool_ptr);
 
@@ -2826,8 +2826,8 @@ load_fmt_file(void)
     font_params = xmalloc_array(font_index, font_max);
     font_name = xmalloc_array(str_number, font_max);
     font_area = xmalloc_array(str_number, font_max);
-    font_bc = xmalloc_array(UTF16_code, font_max);
-    font_ec = xmalloc_array(UTF16_code, font_max);
+    font_bc = xmalloc_array(uchar_t, font_max);
+    font_ec = xmalloc_array(uchar_t, font_max);
     font_glue = xmalloc_array(int32_t, font_max);
     hyphen_char = xmalloc_array(int32_t, font_max);
     skew_char = xmalloc_array(int32_t, font_max);
@@ -3129,7 +3129,7 @@ initialize_more_variables(void)
 
     doing_special = false;
     native_text_size = 128;
-    native_text = xmalloc(native_text_size * sizeof(UTF16_code));
+    native_text = xmalloc(native_text_size * sizeof(uchar_t));
 
     interaction = ERROR_STOP_MODE;
 
@@ -3960,7 +3960,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
     /* Allocate many of our big arrays. */
 
-    buffer = xmalloc_array(UnicodeScalar, buf_size);
+    buffer = xmalloc_array(UTF8_code, buf_size);
     nest = xmalloc_array(list_state_record, nest_size);
     save_stack = xmalloc_array(memory_word, save_size);
     input_stack = xmalloc_array(input_state_t, stack_size);
@@ -3997,7 +3997,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
         eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
-        str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+        str_pool = xmalloc_array(UTF8_code, pool_size);
         font_info = xmalloc_array(memory_word, font_mem_size);
     }
 

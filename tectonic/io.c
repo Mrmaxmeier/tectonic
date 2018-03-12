@@ -316,10 +316,10 @@ input_line(UFILE* f)
 
             default: // none
                 if (last < buf_size && i != EOF && i != '\n' && i != '\r')
-                    buffer[last++] = i;
+                    write_uchar(buffer, i, &last);
                 if (i != EOF && i != '\n' && i != '\r')
                     while (last < buf_size && (i = get_uni_c(f)) != EOF && i != '\n' && i != '\r')
-                        buffer[last++] = i;
+                        write_uchar(buffer, i, &last);
 
                 if (i == EOF && errno != EINTR && last == first)
                     return false;
@@ -364,7 +364,7 @@ u_close(UFILE* f)
 }
 
 
-int
+uchar_t
 get_uni_c(UFILE* f)
 {
     int rval;

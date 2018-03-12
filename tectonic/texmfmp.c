@@ -71,8 +71,7 @@ make_full_name_string(void)
 char *
 gettexstring (str_number s)
 {
-  unsigned int bytesToWrite = 0;
-  pool_pointer len, i, j;
+  pool_pointer len;
   char *name;
 
   if (s >= 65536L)
@@ -88,14 +87,14 @@ gettexstring (str_number s)
 }
 
 
-int32_t
+// This code is ripped from bionic libc's mbtoc32r implementation.
+uchar_t
 get_uchar(UTF8_code * buf, unsigned int * ptr)
 {
   int32_t cp = (int32_t) buf[(*ptr)++];
 
-  int length = 1;
-  unsigned int mask = 0;
-  int lower_bound = 0;
+  unsigned int length, mask, lower_bound;
+
   if ((cp & 0x80) == 0) {
     mask = 0x7f;
     length = 1;
@@ -113,24 +112,74 @@ get_uchar(UTF8_code * buf, unsigned int * ptr)
     length = 4;
     lower_bound = 0x10000;
   } else {
+    bad_utf8_warning();
     return 0xFFFD;
   }
+
+  // printf("get_uchar[%d]: %.*s\n", length, length, buf + (*ptr) - 1);
 
   cp &= mask;
   for (int i = 1; i < length; i++) {
     unsigned char c = buf[(*ptr)++];
-    if ((c & 0xC0) != 0x80)
-            return 0xFFFD;
+    if ((c & 0xC0) != 0x80) {
+      bad_utf8_warning();
+      return 0xFFFD;
+    }
     cp = (cp << 6) | (c & 0x3F);
   }
 
   if (cp < lower_bound) {
+    bad_utf8_warning();
     return 0xFFFD;
   }
 
   return cp;
 }
 
+// Ditto for c32rtomb
+size_t
+write_uchar(UTF8_code * buf, uchar_t c, unsigned int * ptr)
+{
+  if ((c & ~0x7f) == 0) {
+    // Fast path for plain ASCII characters.
+    buf[(*ptr)++] = c;
+    return 1;
+  }
+
+  // Determine the number of octets needed to represent this character.
+  // We always output the shortest sequence possible. Also specify the
+  // first few bits of the first octet, which contains the information
+  // about the sequence length.
+  uint8_t lead;
+  size_t length;
+  if ((c & ~0x7f) == 0) {
+    lead = 0;
+    length = 1;
+  } else if ((c & ~0x7ff) == 0) {
+    lead = 0xc0;
+    length = 2;
+  } else if ((c & ~0xffff) == 0) {
+    lead = 0xe0;
+    length = 3;
+  } else if ((c & ~0x1fffff) == 0) {
+    lead = 0xf0;
+    length = 4;
+  } else {
+    // TODO
+    return 0;
+  }
+  // Output the octets representing the character in chunks
+  // of 6 bits, least significant last. The first octet is
+  // a special case because it contains the sequence length
+  // information.
+  for (size_t i = length - 1; i > 0; i--) {
+    buf[i + *ptr] = (c & 0x3f) | 0x80;
+    c >>= 6;
+  }
+  buf[*ptr] = (c & 0xff) | lead;
+  *ptr += length;
+  return length;
+}
 
 static int
 compare_paths (const char *p1, const char *p2)

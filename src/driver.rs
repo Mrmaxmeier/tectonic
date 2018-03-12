@@ -629,6 +629,9 @@ impl ProcessingSession {
     fn write_files(&mut self, mut mf_dest_maybe: Option<&mut File>, status: &mut
                    TermcolorStatusBackend, only_logs: bool) -> Result<u32> {
         let mut n_skipped_intermediates = 0;
+
+        // TODO: iter sorted (by write order?)
+        // currently the iteration order is unstable
         for (name, contents) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;

@@ -81,6 +81,7 @@ void append_str(str_number s)
 
 bool str_eq_buf(str_number s, int32_t k)
 {
+    // TODO: unicode memes?
     pool_pointer j;
     j = str_start[(s) - 65536L];
     while (j < str_start[(s + 1) - 65536L]) {

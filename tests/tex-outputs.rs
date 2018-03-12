@@ -206,6 +206,12 @@ fn file_encoding() {
         .go()
 }
 
+
+#[test]
+fn native_text() {
+    TestCase::new("native_text.tex").expect(Ok(TexResult::Warnings)).go()
+}
+
 #[test]
 fn tectoniccodatokens_errinside() {
     TestCase::new("tectoniccodatokens_errinside")

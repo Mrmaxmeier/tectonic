@@ -1,2 +1,3 @@
 this is utf8
 🌍
+testing 123 öäüß€

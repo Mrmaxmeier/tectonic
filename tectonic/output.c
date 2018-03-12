@@ -40,7 +40,7 @@ print_ln(void)
 
 
 void
-print_raw_char(UTF16_code s, bool incr_offset)
+print_raw_char(int32_t s, bool incr_offset)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
@@ -99,6 +99,7 @@ print_char(int32_t s)
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
+        // TODO: utf8 stuff
         if (s >= 0x10000) {
             print_raw_char(0xD800 + (s - 0x10000) / 1024, true);
             print_raw_char(0xDC00 + (s - 0x10000) % 1024, true);
@@ -195,25 +196,7 @@ print(int32_t s)
     int32_t pool_idx = s - 0x10000;
     pool_pointer i = str_start[pool_idx];
     while (i < str_start[pool_idx + 1]) {
-        /*
-        if (
-            (str_pool[i] >= 0xD800) &&
-            (str_pool[i] < 0xDC00) &&
-            (i + 1 < str_start[pool_idx + 1]) &&
-            (str_pool[i + 1] >= 0xDC00) &&
-            (str_pool[i + 1] < 0xE000)
-        ) {
-            print_char(
-                0x10000 +
-                (str_pool[i] - 0xD800) * 1024 +
-                str_pool[i + 1] - 0xDC00
-            );
-            i++;
-        } else {
-            print_char(str_pool[i]);
-        }
-        */
-        int32_t c = get_uchar(str_pool, &i);
+        uchar_t c = get_uchar(str_pool, &i);
         print_char(c);
     }
 }

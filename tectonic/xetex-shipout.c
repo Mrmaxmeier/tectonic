@@ -39,7 +39,7 @@ static void pic_out(int32_t p);
 static void write_to_dvi(int32_t a, int32_t b);
 static void dvi_swap(void);
 static void dvi_four(int32_t x);
-static void dvi_two(UTF16_code s);
+static void dvi_two(int32_t s);
 static void dvi_pop(int32_t l);
 static void dvi_font_def(internal_font_number f);
 
@@ -2547,7 +2547,7 @@ dvi_four(int32_t x)
 
 
 static void
-dvi_two(UTF16_code s)
+dvi_two(int32_t s)
 {
     dvi_buf[dvi_ptr] = s / 0x100;
     dvi_ptr++;
