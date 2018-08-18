@@ -15,18 +15,19 @@
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
 
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 extern crate tectonic;
 
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::str::FromStr;
 use std::sync::Mutex;
 
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
+use tectonic::io::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
 use tectonic::io::{IoStack, MemoryIo};
-use tectonic::io::filesystem::{FilesystemPrimaryInputIo, FilesystemIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
@@ -35,33 +36,30 @@ use util::test_path;
 
 const DEBUG: bool = false; // TODO: this is kind of ugly
 
-
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
 }
 
-
 /// A stunted version of cli_driver:FileSummary for examining the format file
 /// SHA256 sum.
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct FileSummary {
     write_digest: Option<DigestData>,
 }
 
 impl FileSummary {
     fn new() -> FileSummary {
-        FileSummary {
-            write_digest: None,
-        }
+        FileSummary { write_digest: None }
     }
 }
-
 
 /// Similarly, a stunted verion of CliIoEvents.
 struct FormatTestEvents(HashMap<OsString, FileSummary>);
 
 impl FormatTestEvents {
-    fn new() -> FormatTestEvents { FormatTestEvents(HashMap::new()) }
+    fn new() -> FormatTestEvents {
+        FormatTestEvents(HashMap::new())
+    }
 }
 
 impl IoEventBackend for FormatTestEvents {
@@ -70,11 +68,13 @@ impl IoEventBackend for FormatTestEvents {
     }
 
     fn output_closed(&mut self, name: OsString, digest: DigestData) {
-        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self
+            .0
+            .get_mut(&name)
+            .expect("closing file that wasn't opened?");
         summ.write_digest = Some(digest);
     }
 }
-
 
 fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
@@ -100,23 +100,20 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
     // Run the engine!
     {
         let mut io = if DEBUG {
-            IoStack::new(vec![
-                &mut stdout,
-                &mut fs_primary,
-                &mut fs_support,
-            ])
+            IoStack::new(vec![&mut stdout, &mut fs_primary, &mut fs_support])
         } else {
-            IoStack::new(vec![
-                &mut mem,
-                &mut fs_primary,
-                &mut fs_support,
-            ])
+            IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support])
         };
 
         TexEngine::new()
             .initex_mode(true)
-            .process(&mut io, &mut events,
-                     &mut NoopStatusBackend::new(), "unused.fmt", texname).unwrap();
+            .process(
+                &mut io,
+                &mut events,
+                &mut NoopStatusBackend::new(),
+                "unused.fmt",
+                texname,
+            ).unwrap();
     }
 
     // Did we get what we expected?
@@ -128,14 +125,17 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             let observed = info.write_digest.unwrap();
 
             if observed != want_digest {
-                println!("expected {} to have SHA256 = {}", fmtname, want_digest.to_string());
+                println!(
+                    "expected {} to have SHA256 = {}",
+                    fmtname,
+                    want_digest.to_string()
+                );
                 println!("instead, got {}", observed.to_string());
                 panic!();
             }
         }
     }
 }
-
 
 // Keep these alphabetized.
 
