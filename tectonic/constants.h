@@ -1029,6 +1029,6 @@
  * of the "format" files must be regenerated -- this includes changes to the
  * string pool. KEEP SYNCHRONIZED WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 28
+#define FORMAT_SERIAL 29
 
 #endif /* not TECTONIC_CONSTANTS_H */
