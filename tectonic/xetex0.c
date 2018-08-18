@@ -5127,9 +5127,11 @@ restart:
                 } else {
                 start_cs:
                     k = cur_input.loc;
-                    cur_chr = buffer[k];
+                    //cur_chr = buffer[k];
+                    //cat = CAT_CODE(cur_chr);
+                    //k++;
+                    cur_chr = get_uchar(buffer, &k);
                     cat = CAT_CODE(cur_chr);
-                    k++;
 
                     if (cat == LETTER)
                         cur_input.state = SKIP_BLANKS;
@@ -5140,9 +5142,11 @@ restart:
 
                     if (cat == LETTER && k <= cur_input.limit) { /*368:*/
                         do {
-                            cur_chr = buffer[k];
+                            // cur_chr = buffer[k];
+                            // cat = CAT_CODE(cur_chr);
+                            // k++;
+                            cur_chr = get_uchar(buffer, &k);
                             cat = CAT_CODE(cur_chr);
-                            k++;
                         } while (cat == LETTER && k <= cur_input.limit);
 
                         if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
@@ -5218,7 +5222,7 @@ restart:
                         }
 
                         if (cat != LETTER)
-                            k--;
+                            k--; // TODO
 
                         if (k > cur_input.loc + 1) {
                             cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
@@ -5291,8 +5295,7 @@ restart:
                         goto found;
                     }
 
-                    cur_cs = SINGLE_BASE + buffer[cur_input.loc];
-                    cur_input.loc++;
+                    cur_cs = SINGLE_BASE + get_uchar(buffer, &cur_input.loc);
                 }
 
             found:
@@ -11220,7 +11223,6 @@ void bad_utf8_warning(void)
     if (cur_input.name == 0)
         print_cstr(" in terminal input");
     else {
-
         print_cstr(" at line ");
         print_int(line);
     }
