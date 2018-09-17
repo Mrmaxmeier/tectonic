@@ -47,7 +47,6 @@ static int32_t finite_shrink(int32_t p);
 static small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 
 
-static inline UnicodeScalar
 get_native_usv(int32_t p, int32_t i) {
     unsigned short c = NATIVE_NODE_text(p)[i];
 

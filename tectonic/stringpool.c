@@ -81,20 +81,11 @@ void append_str(str_number s)
 
 bool str_eq_buf(str_number s, int32_t k)
 {
-    // TODO: unicode memes?
+    // TODO: should the equality test happen on normalized buffers?
     pool_pointer j;
     j = str_start[(s) - 65536L];
     while (j < str_start[(s + 1) - 65536L]) {
-
-        if (buffer[k] >= 65536L) {
-
-            if (str_pool[j] != 55296L + (buffer[k] - 65536L) / 1024) {
-                return false;
-            } else if (str_pool[j + 1] != 56320L + (buffer[k] - 65536L) % 1024) {
-                return false;
-            } else
-                j++;
-        } else if (str_pool[j] != buffer[k]) {
+        if (str_pool[j] != buffer[k]) {
             return false;
         }
         j++;

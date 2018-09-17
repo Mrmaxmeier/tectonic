@@ -103,7 +103,7 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 
 BEGIN_EXTERN_C
 
-void linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength);
+void linebreak_start(int f, int32_t localeStrNum, char* text, int32_t textLength);
 int linebreak_next(void);
 int get_encoding_mode_and_info(int32_t* info);
 void print_utf8_str(const unsigned char* str, int len);
@@ -133,7 +133,7 @@ int32_t ot_font_get_3(int32_t what, void* engine, int32_t param1, int32_t param2
 
 int makeXDVGlyphArrayData(void* p);
 int make_font_def(int32_t f);
-int apply_mapping(void* cnv, uint16_t* txtPtr, int txtLen);
+int apply_mapping(void* cnv, char* txtPtr, int txtLen);
 void store_justified_native_glyphs(void* node);
 void measure_native_node(void* node, int use_glyph_metrics);
 Fixed real_get_native_italic_correction(void* node);

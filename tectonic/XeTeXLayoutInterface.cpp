@@ -986,7 +986,7 @@ static const gr_slot* grPrevSlot = NULL;
 static int grTextLen;
 
 bool
-initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t* txtPtr, int txtLen)
+initGraphiteBreaking(XeTeXLayoutEngine engine, const char* txtPtr, int txtLen)
 {
     hb_face_t* hbFace = hb_font_get_face(engine->font->getHbFont());
     gr_face* grFace = hb_graphite2_face_get_gr_face(hbFace);

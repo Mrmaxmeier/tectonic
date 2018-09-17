@@ -64,7 +64,7 @@ UTF8_code trick_buf[256];
 int32_t trick_count;
 int32_t first_count;
 bool doing_special;
-uchar_t *native_text;
+uchar_t *native_text; // TODO: encode in utf8
 int32_t native_text_size;
 int32_t native_len;
 int32_t save_native_len;
@@ -185,7 +185,7 @@ scaled_t *font_dsize;
 font_index *font_params;
 str_number *font_name;
 str_number *font_area;
-uchar_t *font_bc;
+uchar_t *font_bc; // TODO: encode as utf8
 uchar_t *font_ec;
 int32_t *font_glue;
 bool *font_used;

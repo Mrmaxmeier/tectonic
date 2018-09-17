@@ -89,7 +89,7 @@ DoAATLayout(void* p, int justify)
     CGFloat width;
 
     long txtLen;
-    const UniChar* txtPtr;
+    const uchar_t* txtPtr;
 
     CFDictionaryRef attributes;
     CFStringRef string;
@@ -104,7 +104,7 @@ DoAATLayout(void* p, int justify)
         _tt_abort("DoAATLayout called for non-AAT font");
 
     txtLen = native_length(node);
-    txtPtr = (UniChar*)(node + NATIVE_NODE_SIZE);
+    txtPtr = (node + NATIVE_NODE_SIZE);
 
     attributes = font_layout_engine[native_font(node)];
     string = CFStringCreateWithCharactersNoCopy(NULL, txtPtr, txtLen, kCFAllocatorNull);
@@ -302,7 +302,7 @@ static int
 mapCharToGlyphFromCTFont(CTFontRef font, UInt32 ch)
 {
     CGGlyph glyphs[2] = { 0 };
-    UniChar txt[2];
+    uchar_t txt[2];
     int     len = 1;
 
     if (ch > 0xffff) {

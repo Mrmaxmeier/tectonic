@@ -37,7 +37,6 @@ typedef unsigned int			UInt32;	/* NB: assumes int is 4 bytes */
 typedef UInt8					Byte;
 #endif
 typedef Byte*					BytePtr;
-typedef UInt16					UniChar;
 
 typedef char*					Ptr;
 typedef Byte*					TextPtr;

@@ -72,7 +72,7 @@ static UBreakIterator* brkIter = NULL;
 static int brkLocaleStrNum = 0;
 
 void
-linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength)
+linebreak_start(int f, int32_t localeStrNum, char* text, int32_t textLength)
 {
     UErrorCode status = U_ZERO_ERROR;
     char* locale = (char*)gettexstring(localeStrNum);
@@ -262,7 +262,7 @@ load_tfm_font_mapping(void)
 int
 apply_tfm_font_mapping(void* cnv, int c)
 {
-    UniChar in = c;
+    uchar_t in = c;
     Byte out[2];
     UInt32 inUsed, outUsed;
     /* TECkit_Status status; */
@@ -1288,7 +1288,7 @@ make_font_def(int32_t f)
 }
 
 int
-apply_mapping(void* pCnv, uint16_t* txtPtr, int txtLen)
+apply_mapping(void* pCnv, char* txtPtr, int txtLen)
 {
     TECkit_Converter cnv = (TECkit_Converter)pCnv;
     UInt32 inUsed, outUsed;
@@ -1296,25 +1296,25 @@ apply_mapping(void* pCnv, uint16_t* txtPtr, int txtLen)
     static UInt32 outLength = 0;
 
     /* allocate outBuffer if not big enough */
-    if (outLength < txtLen * sizeof(UniChar) + 32) {
+    if (outLength < txtLen * sizeof(uchar_t) + 32) {
         free(mapped_text);
-        outLength = txtLen * sizeof(UniChar) + 32;
+        outLength = txtLen * sizeof(uchar_t) + 32;
         mapped_text = xmalloc(outLength);
     }
 
     /* try the mapping */
 retry:
     status = TECkit_ConvertBuffer(cnv,
-            (Byte*)txtPtr, txtLen * sizeof(UniChar), &inUsed,
+            (Byte*)txtPtr, txtLen * sizeof(uchar_t), &inUsed,
             (Byte*)mapped_text, outLength, &outUsed, true);
 
     switch (status) {
         case kStatus_NoError:
-            txtPtr = (UniChar*)mapped_text;
-            return outUsed / sizeof(UniChar);
+            txtPtr = mapped_text;
+            return outUsed / sizeof(uchar_t);
 
         case kStatus_OutputBufferFull:
-            outLength += (txtLen * sizeof(UniChar)) + 32;
+            outLength += (txtLen * sizeof(uchar_t)) + 32;
             free(mapped_text);
             mapped_text = xmalloc(outLength);
             goto retry;
@@ -1333,7 +1333,7 @@ snap_zone(scaled_t* value, scaled_t snap_value, scaled_t fuzz)
 }
 
 void
-get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_t* depth)
+get_native_char_height_depth(int32_t font, uchar_t ch, scaled_t* height, scaled_t* depth)
 {
 #define QUAD(f)         font_info[6+param_base[f]].b32.s1
 #define X_HEIGHT(f)     font_info[5+param_base[f]].b32.s1
@@ -2088,7 +2088,7 @@ aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2
 
     if (name) {
         CFIndex len = CFStringGetLength(name);
-        UniChar* buf = xcalloc(len, sizeof(UniChar));
+        uchar_t* buf = xcalloc(len, sizeof(uchar_t));
         CFStringGetCharacters(name, CFRangeMake(0, len), buf);
         print_chars(buf, len);
         free(buf);

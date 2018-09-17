@@ -22,6 +22,10 @@
 
 #define odd(x) ((x) & 1)
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
 /* Extra stuff used in various change files for various reasons.  */
 
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
@@ -49,7 +53,7 @@ typedef int32_t pool_pointer;
 typedef int32_t str_number;
 typedef unsigned short packed_UTF16_code;
 
-// While strings are internally encoded as UTF8
+// While strings are internally encoded as UTF8,
 // chars are full unicode code-points.
 // This is similar to the Rust str and char types.
 typedef unsigned char UTF8_code;

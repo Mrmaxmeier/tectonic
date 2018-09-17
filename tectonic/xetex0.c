@@ -6771,10 +6771,10 @@ reswitch:
     mem[p].b16.s1 = mem[p].b16.s1 + (math_char(c) / 65536L) * 256;
 }
 
-void set_math_char(int32_t c)
+void set_math_char(uchar_t c)
 {
     int32_t p;
-    UnicodeScalar ch;
+    uchar_t ch;
 
     if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
         cur_cs = cur_chr + 1;
@@ -10855,22 +10855,9 @@ new_native_character(internal_font_number f, uchar_t c)
     int32_t i, len;
 
     if (font_mapping[f] != NULL) {
-        if (c > 65535L) {
-            if (pool_ptr + 2 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
-
-            // TODO: encode c as utf8
-            str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
-            pool_ptr++;
-            str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
-            pool_ptr++;
-        } else {
-            if (pool_ptr + 1 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
-
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
-        }
+        if (pool_ptr + 4 > pool_size)
+            overflow("pool size", pool_size - init_pool_ptr);
+        write_uchar(str_pool, c, pool_ptr);
 
         len = apply_mapping(
             font_mapping[f],
@@ -17119,6 +17106,7 @@ void load_picture(bool is_pdf)
                 y_size_req = 0.0;
                 transform_concat(&t, &t2);
             }
+
             make_rotation(&t2, Fix2D(cur_val) * M_PI / ((double)180.0));
             {
                 register int32_t for_end;

@@ -126,7 +126,7 @@ const char* getGlyphName(XeTeXFont font, uint16_t gid, int* len);
 int getFontCharRange(XeTeXLayoutEngine engine, int reqFirst);
 
 /* graphite interface functions... */
-bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t* txtPtr, int txtLen);
+bool initGraphiteBreaking(XeTeXLayoutEngine engine, const char* txtPtr, int txtLen);
 int findNextGraphiteBreak(void);
 
 bool usingOpenType(XeTeXLayoutEngine engine);
