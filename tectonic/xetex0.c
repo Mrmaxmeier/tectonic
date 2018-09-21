@@ -3912,6 +3912,8 @@ bool pseudo_input(void)
             if (r <= for_end)
                 do {
                     w = mem[r].b16;
+                    if (w.s3 >= 0x80 || w.s2 >= 0x80 || w.s1 >= 0x80 || w.s0 >= 0x80)
+                        _tt_abort("TODO: not implemented\ntrying to write multibyte chars to stream");
                     buffer[last] = w.s3;
                     buffer[last + 1] = w.s2;
                     buffer[last + 2] = w.s1;
@@ -5092,14 +5094,28 @@ check_outer_validity(void)
 
 
 void
+replace_buf_char(int idx, int replace_size, uchar_t replace_with) {
+    int char_width = 1;
+    if (cur_chr >= 0x010000) char_width = 4;
+    else if (cur_chr >= 0x800) char_width = 3;
+    else if (cur_chr >= 0x80) char_width = 2;
+
+    // replace_size += char_width - 1;
+    cur_input.limit -= replace_size + char_width - 1;
+
+    if (cur_input.limit >= idx + char_width)
+        memmove(buffer + idx + char_width, buffer + idx + replace_size, cur_input.limit - idx - char_width + 1);
+    write_uchar(buffer, replace_with, &idx);
+}
+
+
+void
 get_next(void)
 {
     int32_t k;
     int32_t t;
     unsigned char /*max_char_code */ cat;
     uchar_t c;
-    // UTF16_code lower;
-    small_number d;
     small_number sup_count;
 
 restart:
@@ -5171,22 +5187,17 @@ restart:
 
                             sup_count_save = sup_count;
 
-                            for (d = 1; d <= sup_count_save; d++) {
+                            for (int d = 1; d <= sup_count_save; d++) {
                                 if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
                                     /* Non-hex: do it old style */
                                     c = buffer[k + 1];
 
                                     if (c < 128) {
+                                        k--;
                                         if (c < 64)
-                                            buffer[k - 1] = c + 64;
+                                            replace_buf_char(k, 3, c + 64);
                                         else
-                                            buffer[k - 1] = c - 64;
-                                        d = 2;
-                                        cur_input.limit = cur_input.limit - d;
-                                        while (k <= cur_input.limit) {
-                                            buffer[k] = buffer[k + d];
-                                            k++;
-                                        }
+                                            replace_buf_char(k, 3, c - 64);
                                         goto start_cs;
                                     } else {
                                         sup_count = 0;
@@ -5197,7 +5208,7 @@ restart:
                             if (sup_count > 0) {
                                 cur_chr = 0;
 
-                                for (d = 1; d <= sup_count; d++) {
+                                for (int d = 1; d <= sup_count; d++) {
                                     c = buffer[k + sup_count - 2 + d];
                                     if (c <= '9' )
                                         cur_chr = 16 * cur_chr + c - '0';
@@ -5208,83 +5219,65 @@ restart:
                                 if (cur_chr > BIGGEST_USV) {
                                     cur_chr = buffer[k];
                                 } else {
-                                    buffer[k - 1] = cur_chr;
-                                    d = 2 * sup_count - 1;
-                                    cur_input.limit = cur_input.limit - d;
-
-                                    while (k <= cur_input.limit) {
-                                        buffer[k] = buffer[k + d];
-                                        k++;
-                                    }
+                                    k--;
+                                    replace_buf_char(k, 2, cur_chr);
                                     goto start_cs;
                                 }
                             }
                         }
 
                         if (cat != LETTER)
-                            k--; // TODO
+                            k--;
 
                         if (k > cur_input.loc + 1) {
                             cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
                             cur_input.loc = k;
                             goto found;
                         }
-                    } else { /*367:*/
-                        if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
-                            int32_t sup_count_save;
+                    } else if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                        int32_t sup_count_save;
 
-                            sup_count = 2;
+                        sup_count = 2;
 
-                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
-                                   buffer[k + sup_count - 1] == cur_chr)
-                                sup_count++;
+                        while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                                buffer[k + sup_count - 1] == cur_chr)
+                            sup_count++;
 
-                            sup_count_save = sup_count;
+                        sup_count_save = sup_count;
 
-                            for (d = 1; d <= sup_count_save; d++) {
-                                if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
-                                    c = buffer[k + 1];
-                                    if (c < 128) {
-                                        if (c < 64)
-                                            buffer[k - 1] = c + 64;
-                                        else
-                                            buffer[k - 1] = c - 64;
-                                        d = 2;
-                                        cur_input.limit = cur_input.limit - d;
-                                        while (k <= cur_input.limit) {
-                                            buffer[k] = buffer[k + d];
-                                            k++;
-                                        }
-                                        goto start_cs;
-                                    } else {
-                                        sup_count = 0;
-                                    }
+                        for (int d = 1; d <= sup_count_save; d++) {
+                            if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
+                                c = buffer[k + 1];
+                                if (c < 128) {
+                                    k--;
+                                    if (c < 64)
+                                        replace_buf_char(k, 3, c + 64);
+                                    else
+                                        replace_buf_char(k, 3, c - 64);
+                                    goto start_cs;
+                                } else {
+                                    sup_count = 0;
                                 }
                             }
+                        }
 
-                            if (sup_count > 0) {
-                                cur_chr = 0;
+                        if (sup_count > 0) {
+                            cur_chr = 0;
 
-                                for (d = 1; d <= sup_count; d++) {
-                                    c = buffer[k + sup_count - 2 + d];
-                                    if (c <= '9' )
-                                        cur_chr = 16 * cur_chr + c - '0';
-                                    else
-                                        cur_chr = 16 * cur_chr + c - 'a' + 10;
-                                }
+                            for (int d = 1; d <= sup_count; d++) {
+                                c = buffer[k + sup_count - 2 + d];
+                                if (c <= '9' )
+                                    cur_chr = 16 * cur_chr + c - '0';
+                                else
+                                    cur_chr = 16 * cur_chr + c - 'a' + 10;
+                            }
 
-                                if (cur_chr > BIGGEST_USV) {
-                                    cur_chr = buffer[k];
-                                } else {
-                                    buffer[k - 1] = cur_chr;
-                                    d = 2 * sup_count - 1;
-                                    cur_input.limit = cur_input.limit - d;
-                                    while (k <= cur_input.limit) {
-                                        buffer[k] = buffer[k + d];
-                                        k++;
-                                    }
-                                    goto start_cs;
-                                }
+                            if (cur_chr > BIGGEST_USV) {
+                                cur_chr = buffer[k];
+                            } else {
+                                k--;
+                                replace_buf_char(k, sup_count * 2, cur_chr);
+                                goto start_cs;
                             }
                         }
                     }
@@ -5323,7 +5316,7 @@ restart:
                                cur_chr == buffer[cur_input.loc + sup_count - 1])
                             sup_count++;
 
-                        for (d = 1; d <= sup_count; d++) {
+                        for (int d = 1; d <= sup_count; d++) {
                             if (!IS_LC_HEX(buffer[cur_input.loc + sup_count - 2 + d])) {
                                 c = buffer[cur_input.loc + 1];
                                 if (c < 128) {
@@ -5340,7 +5333,7 @@ restart:
 
                         cur_chr = 0;
 
-                        for (d = 1; d <= sup_count; d++) {
+                        for (int d = 1; d <= sup_count; d++) {
                             c = buffer[cur_input.loc + sup_count - 2 + d];
                             if (c <= '9' )
                                 cur_chr = 16 * cur_chr + c - '0';
@@ -6249,6 +6242,8 @@ reswitch:
                     if (max_buf_stack == buf_size)
                         overflow("buffer size", buf_size);
                 }
+                if (mem[p].b32.s0 % MAX_CHAR_VAL > 0x7F)
+                    _tt_abort("TODO: this might be wrong, lets abort");
                 buffer[j] = mem[p].b32.s0 % MAX_CHAR_VAL;
                 j++;
                 p = mem[p].b32.s1;

@@ -75,7 +75,7 @@ void
 linebreak_start(int f, int32_t localeStrNum, char* text, int32_t textLength)
 {
     UErrorCode status = U_ZERO_ERROR;
-    char* locale = (char*)gettexstring(localeStrNum);
+    char* locale = gettexstring(localeStrNum);
 
     if (font_area[f] == OTGR_FONT_FLAG && streq_ptr(locale, "G")) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
