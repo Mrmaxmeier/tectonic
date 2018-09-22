@@ -348,104 +348,40 @@ void
 print_file_name(int32_t n, int32_t a, int32_t e)
 {
     bool must_quote = false;
-    int32_t quote_char = 0;
-    pool_pointer j;
+    char quote_char = '"';
 
-    if (a != 0) {
-        j = str_start[(a) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
-                must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
-                must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
-            }
-            j++;
+    char* sa = gettexstring(a);
+    char* sn = gettexstring(n);
+    char* se = gettexstring(e);
+    int len = strlen(sa) + strlen(sn) + strlen(se);
+    char* str = malloc(len + 1);
+    sprintf(str, "%s%s%s", sa, sn, se);
+    free(sa);
+    free(sn);
+    free(se);
+
+    for (int i = 0; i < len; i++) {
+        if (str[i] == ' ')
+            must_quote = true;
+        else if (str[i] == '"' || str[i] == '\'')
+            must_quote = true;
+            quote_char = str[i] == '"' ? '\'' : '"';
+    }
+
+    if (must_quote)
+        print(quote_char);
+    for (int i = 0; i < len; i++) {
+        if (str[i] == quote_char) {
+            print(quote_char);
+            quote_char = str[i] == '"' ? '\'' : '"';
+            print(quote_char);
         }
+        print(str[i]);
     }
+    if (must_quote)
+        print(quote_char);
 
-    if (n != 0) {
-        j = str_start[(n) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
-                must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
-                must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
-            }
-            j++;
-        }
-    }
-
-    if (e != 0) {
-        j = str_start[(e) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
-                must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
-                must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
-            }
-            j++;
-        }
-    }
-
-    if (must_quote) {
-        if (quote_char == 0)
-            quote_char = '"' ;
-        print_char(quote_char);
-    }
-
-    if (a != 0) {
-        register int32_t for_end;
-        j = str_start[(a) - 0x10000];
-        for_end = str_start[(a + 1) - 0x10000] - 1;
-        if (j <= for_end)
-            do {
-                if (str_pool[j] == quote_char) {
-                    print(quote_char);
-                    quote_char = 73 /*""" 39 */  - quote_char;
-                    print(quote_char);
-                }
-                print(str_pool[j]);
-            }
-            while (j++ < for_end);
-    }
-
-    if (n != 0) {
-        register int32_t for_end;
-        j = str_start[(n) - 0x10000];
-        for_end = str_start[(n + 1) - 0x10000] - 1;
-        if (j <= for_end)
-            do {
-                if (str_pool[j] == quote_char) {
-                    print(quote_char);
-                    quote_char = 73 /*""" 39 */  - quote_char;
-                    print(quote_char);
-                }
-                print(str_pool[j]);
-            }
-            while (j++ < for_end);
-    }
-
-    if (e != 0) {
-        register int32_t for_end;
-        j = str_start[(e) - 0x10000];
-        for_end = str_start[(e + 1) - 0x10000] - 1;
-        if (j <= for_end)
-            do {
-                if (str_pool[j] == quote_char) {
-                    print(quote_char);
-                    quote_char = 73 /*""" 39 */  - quote_char;
-                    print(quote_char);
-                }
-                print(str_pool[j]);
-            }
-            while (j++ < for_end);
-    }
-
-    if (quote_char != 0)
-        print_char(quote_char);
+    free(str);
 }
 
 
