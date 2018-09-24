@@ -9098,39 +9098,27 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
     k = b;
     while (k < pool_ptr) {
         t = get_uchar(str_pool, &k);
-        // t = str_pool[k];
         if ((t == ' ' ) && (cat == 0))
             t = SPACE_TOKEN;
         else {
-            /*
-            // TODO: get_uchar
-            if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
-                && (str_pool[k + 1] < 0xE000)) {
-                k++;
-                t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
-            }
-            */
             if (cat == 0)
                 t = OTHER_TOKEN + t;
             else
                 t = MAX_CHAR_VAL * cat + t;
         }
         {
-            {
-                q = avail;
-                if (q == TEX_NULL)
-                    q = get_avail();
-                else {
+            q = avail;
+            if (q == TEX_NULL)
+                q = get_avail();
+            else {
 
-                    avail = mem[q].b32.s1;
-                    mem[q].b32.s1 = TEX_NULL;
-                }
+                avail = mem[q].b32.s1;
+                mem[q].b32.s1 = TEX_NULL;
             }
-            mem[p].b32.s1 = q;
-            mem[q].b32.s0 = t;
-            p = q;
         }
-        // k++;
+        mem[p].b32.s1 = q;
+        mem[q].b32.s0 = t;
+        p = q;
     }
     pool_ptr = b;
     return p;
