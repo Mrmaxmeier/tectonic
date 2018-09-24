@@ -72,15 +72,15 @@ char *
 gettexstring (str_number s)
 {
   pool_pointer len;
-  char *name;
 
   if (s >= 65536L)
-      len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
+    len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   else
-      len = 0;
+    len = 0;
 
-  name = xmalloc(len + 1);
-  memcpy(name, str_pool + str_start[s - 65536L], len);
+  char* name = xmalloc(len + 1);
+  if (len > 0)
+    memcpy(name, str_pool + str_start[s - 65536L], len);
   name[len] = '\0';
 
   return name;

@@ -5093,6 +5093,7 @@ check_outer_validity(void)
     case (s + SUB_MARK): case (s + LETTER): case (s + OTHER_CHAR)
 
 
+// replaces buffer[idx:replace_size] with char replace_with
 void
 replace_buf_char(int idx, int replace_size, uchar_t replace_with) {
     int char_width = 1;
@@ -5100,11 +5101,13 @@ replace_buf_char(int idx, int replace_size, uchar_t replace_with) {
     else if (cur_chr >= 0x800) char_width = 3;
     else if (cur_chr >= 0x80) char_width = 2;
 
-    // replace_size += char_width - 1;
-    cur_input.limit -= replace_size + char_width - 1;
+    int movelen = cur_input.limit - idx - replace_size + 1; // move \r too
+    if (movelen > 0)
+        memmove(buffer + idx + char_width, buffer + idx + replace_size, movelen);
+    else if (movelen != 0)
+        _tt_abort("movelen: %d", movelen);
 
-    if (cur_input.limit >= idx + char_width)
-        memmove(buffer + idx + char_width, buffer + idx + replace_size, cur_input.limit - idx - char_width + 1);
+    cur_input.limit -= replace_size - char_width;
     write_uchar(buffer, replace_with, &idx);
 }
 

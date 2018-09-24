@@ -99,12 +99,11 @@ print_char(int32_t s)
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
-        // TODO: utf8 stuff
-        if (s >= 0x10000) {
-            print_raw_char(0xD800 + (s - 0x10000) / 1024, true);
-            print_raw_char(0xDC00 + (s - 0x10000) % 1024, true);
-        } else
-            print_raw_char(s, true);
+        char tmpbuf[6];
+        int bufidx = 0;
+        write_uchar(tmpbuf, s, &bufidx);
+        for (int i = 0; i < bufidx; i++)
+            print_raw_char(tmpbuf[i], true);
         return;
     }
 
@@ -369,17 +368,17 @@ print_file_name(int32_t n, int32_t a, int32_t e)
     }
 
     if (must_quote)
-        print(quote_char);
+        print_char(quote_char);
     for (int i = 0; i < len; i++) {
         if (str[i] == quote_char) {
-            print(quote_char);
+            print_char(quote_char);
             quote_char = str[i] == '"' ? '\'' : '"';
-            print(quote_char);
+            print_char(quote_char);
         }
-        print(str[i]);
+        print_raw_char(str[i], true); // MEH
     }
     if (must_quote)
-        print(quote_char);
+        print_char(quote_char);
 
     free(str);
 }
