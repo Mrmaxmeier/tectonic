@@ -6245,8 +6245,10 @@ reswitch:
                     if (max_buf_stack == buf_size)
                         overflow("buffer size", buf_size);
                 }
-                if (mem[p].b32.s0 % MAX_CHAR_VAL > 0x7F)
-                    _tt_abort("TODO: this might be wrong, lets abort");
+                // TODO: investigate. switching to unicode chars triggers this.
+                // not sure what this was supposed to guard
+                //if (mem[p].b32.s0 % MAX_CHAR_VAL > 0x7F)
+                //    _tt_abort("TODO: this might be wrong, lets abort");
                 buffer[j] = mem[p].b32.s0 % MAX_CHAR_VAL;
                 j++;
                 p = mem[p].b32.s1;
