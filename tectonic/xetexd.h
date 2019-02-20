@@ -586,7 +586,7 @@ extern unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
 extern trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 extern int32_t trie_op_ptr;
 extern trie_opcode max_op_used;
-extern UTF8_code *trie_c;
+extern uchar_t *trie_c;
 extern trie_opcode *trie_o;
 extern trie_pointer *trie_l;
 extern trie_pointer *trie_r;

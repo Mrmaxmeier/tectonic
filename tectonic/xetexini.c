@@ -272,7 +272,7 @@ unsigned char trie_op_lang[TRIE_OP_SIZE + 1];
 trie_opcode trie_op_val[TRIE_OP_SIZE + 1];
 int32_t trie_op_ptr;
 trie_opcode max_op_used;
-UTF8_code *trie_c;
+uchar_t *trie_c;
 trie_opcode *trie_o;
 trie_pointer *trie_l;
 trie_pointer *trie_r;
@@ -4291,7 +4291,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         trie_trl = xmalloc_array(trie_pointer, trie_size);
         trie_tro = xmalloc_array(trie_pointer, trie_size);
         trie_trc = xmalloc_array(uint16_t, trie_size);
-        trie_c = xmalloc_array(packed_UTF16_code, trie_size);
+        trie_c = xmalloc_array(uchar_t, trie_size);
         trie_o = xmalloc_array(trie_opcode, trie_size);
         trie_l = xmalloc_array(trie_pointer, trie_size);
         trie_r = xmalloc_array(trie_pointer, trie_size);
