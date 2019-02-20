@@ -10881,6 +10881,7 @@ new_native_character(internal_font_number f, uchar_t c)
         if (c > 65535L) {
             mem[p + 4].b16.s1 = 2;
             // TODO: utf16 stuff
+            _tt_abort("TODO: utf8?");
             NATIVE_NODE_text(p)[0] = (c - 65536L) / 1024 + 0xD800;
             NATIVE_NODE_text(p)[1] = (c - 65536L) % 1024 + 0xDC00;
         } else {

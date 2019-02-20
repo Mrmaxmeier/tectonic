@@ -420,6 +420,7 @@ print_native_word(int32_t p)
     for (i = 0; i <= for_end; i++) {
         c = NATIVE_NODE_text(p)[i];
         if ((c >= 0xD800) && (c < 0xDC00)) {
+            _tt_abort("TODO: utf8?");
             if (i < mem[p + 4].b16.s1 - 1) {
                 cc = NATIVE_NODE_text(p)[i + 1];
                 if ((cc >= 0xDC00) && (cc < 0xE000)) {
