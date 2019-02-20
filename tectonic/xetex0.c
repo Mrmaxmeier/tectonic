@@ -6245,12 +6245,10 @@ reswitch:
                     if (max_buf_stack == buf_size)
                         overflow("buffer size", buf_size);
                 }
-                // TODO: investigate. switching to unicode chars triggers this.
-                // not sure what this was supposed to guard
-                //if (mem[p].b32.s0 % MAX_CHAR_VAL > 0x7F)
-                //    _tt_abort("TODO: this might be wrong, lets abort");
-                buffer[j] = mem[p].b32.s0 % MAX_CHAR_VAL;
-                j++;
+
+                if (j + 4 >= buf_size)
+                    overflow("buffer size", buf_size);
+                write_uchar(buffer, mem[p].b32.s0 % MAX_CHAR_VAL, &j);
                 p = mem[p].b32.s1;
             }
 
@@ -10843,9 +10841,9 @@ new_native_character(internal_font_number f, uchar_t c)
     int32_t i, len;
 
     if (font_mapping[f] != NULL) {
-        if (pool_ptr + 4 > pool_size)
+        if (pool_ptr + 4 >= pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
-        write_uchar(str_pool, c, pool_ptr);
+        write_uchar(str_pool, c, &pool_ptr);
 
         len = apply_mapping(
             font_mapping[f],
@@ -18518,7 +18516,7 @@ reswitch:
                 // main_k = get_uchar(native_text, &temp_ptr);
                 main_k = native_text[temp_ptr];
                 temp_ptr++;
-                printf("read from native_text: %c\n", main_k);
+                printf("read from native_text: %c 0x%x\n", main_k, main_k);
 
                 if (map_char_to_glyph(main_f, main_k) == 0)
                     char_warning(main_f, main_k);
