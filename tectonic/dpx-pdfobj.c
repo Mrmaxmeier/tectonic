@@ -192,9 +192,6 @@ static pdf_obj *output_stream;
 #define OBJSTM_MAX_OBJS  200
 /* the limit is only 100 for linearized PDF */
 
-static bool enc_mode;
-static bool doc_enc_mode;
-
 static pdf_obj *trailer_dict;
 static pdf_obj *xref_stream;
 
@@ -319,7 +316,7 @@ add_xref_entry (unsigned label, unsigned char type, unsigned int field2, unsigne
 
 #define BINARY_MARKER "%\344\360\355\370\n"
 void
-pdf_out_init (const char *filename, bool do_encryption, bool enable_object_stream)
+pdf_out_init (const char *filename, bool enable_object_stream)
 {
     char v;
 
@@ -363,9 +360,6 @@ pdf_out_init (const char *filename, bool do_encryption, bool enable_object_strea
     pdf_out(pdf_output_handle, &v, 1);
     pdf_out(pdf_output_handle, "\n", 1);
     pdf_out(pdf_output_handle, BINARY_MARKER, strlen(BINARY_MARKER));
-
-    enc_mode = false;
-    doc_enc_mode = do_encryption;
 }
 
 static void
@@ -399,7 +393,6 @@ static void
 dump_trailer_dict (void)
 {
     pdf_out(pdf_output_handle, "trailer\n", 8);
-    enc_mode = false;
     write_dict(trailer_dict->data, pdf_output_handle);
     pdf_release_obj(trailer_dict);
     pdf_out_char(pdf_output_handle, '\n');
@@ -525,13 +518,6 @@ pdf_set_root (pdf_obj *object)
     if (pdf_add_dict(trailer_dict, pdf_new_name("Root"), pdf_ref_obj(object))) {
         _tt_abort("Root object already set!");
     }
-    /* Adobe Readers don't like a document catalog inside an encrypted
-     * object stream, although the PDF v1.5 spec seems to allow this.
-     * Note that we don't set OBJ_NO_ENCRYPT since the name dictionary in
-     * a document catalog may contain strings, which should be encrypted.
-     */
-    if (doc_enc_mode)
-        object->flags |= OBJ_NO_OBJSTM;
 }
 
 void
@@ -970,12 +956,8 @@ write_string (pdf_string *str, rust_output_handle_t handle)
     int  nescc = 0, count;
     size_t i, len = 0;
 
-    if (enc_mode) {
-        pdf_encrypt_data(str->string, str->length, &s, &len);
-    } else {
-        s = str->string;
-        len = str->length;
-    }
+    s = str->string;
+    len = str->length;
 
     /*
      * Count all ASCII non-printable characters.
@@ -1010,8 +992,6 @@ write_string (pdf_string *str, rust_output_handle_t handle)
         }
         pdf_out_char(handle, ')');
     }
-    if (enc_mode && s)
-        free(s);
 }
 
 static void
@@ -1907,16 +1887,6 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
     }
 #endif /* HAVE_ZLIB */
 
-    /* AES will change the size of data! */
-    if (enc_mode) {
-        unsigned char *cipher = NULL;
-        size_t         cipher_len = 0;
-        pdf_encrypt_data(filtered, filtered_length, &cipher, &cipher_len);
-        free(filtered);
-        filtered        = cipher;
-        filtered_length = cipher_len;
-    }
-
 
     pdf_add_dict(stream->dict,
                  pdf_new_name("Length"), pdf_new_number(filtered_length));
@@ -2481,9 +2451,6 @@ pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle)
     add_xref_entry(object->label, 1,
                    pdf_output_file_position, object->generation);
     length = sprintf(format_buffer, "%u %hu obj\n", object->label, object->generation);
-    enc_mode = doc_enc_mode && !(object->flags & OBJ_NO_ENCRYPT);
-    pdf_enc_set_label(object->label);
-    pdf_enc_set_generation(object->generation);
     pdf_out(handle, format_buffer, length);
     pdf_write_obj(object, handle);
     pdf_out(handle, "\nendobj\n", 8);
@@ -2506,7 +2473,6 @@ pdf_add_objstm (pdf_obj *objstm, pdf_obj *object)
 
     /* redirect output into objstm */
     output_stream = objstm;
-    enc_mode = false;
     pdf_write_obj(object, pdf_output_handle);
     pdf_out_char(pdf_output_handle, '\n');
     output_stream = NULL;
@@ -2569,7 +2535,6 @@ pdf_release_obj (pdf_obj *object)
          */
         if (object->label && pdf_output_handle != NULL) {
             if (!do_objstm || object->flags & OBJ_NO_OBJSTM
-                || (doc_enc_mode && object->flags & OBJ_NO_ENCRYPT)
                 || object->generation)
                 pdf_flush_obj(object, pdf_output_handle);
             else {

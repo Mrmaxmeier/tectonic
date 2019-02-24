@@ -65,8 +65,7 @@ void     pdf_obj_set_verbose (int level);
 void     pdf_obj_reset_global_state (void);
 void     pdf_error_cleanup   (void);
 
-void     pdf_out_init      (const char *filename,
-                                   bool enable_encrypt, bool enable_object_stream);
+void     pdf_out_init      (const char *filename, bool enable_object_stream);
 void     pdf_out_flush     (void);
 void     pdf_set_version   (unsigned version);
 unsigned int pdf_get_version   (void);

@@ -35,7 +35,6 @@
 void     pdf_doc_set_verbose (int level);
 
 void     pdf_open_document  (const char *filename,
-                                    bool enable_encrypt,
                                     bool enable_object_stream,
                                     double media_width, double media_height,
                                     double annot_grow_amount,

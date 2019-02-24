@@ -29,17 +29,7 @@
 
 #include "dpx-pdfobj.h"
 
-#define MAX_PWD_LEN 127
-
-void pdf_enc_set_verbose (int level);
 pdf_obj *pdf_enc_id_array (void);
 void pdf_enc_compute_id_string (const char *dviname, const char *pdfname);
-void pdf_enc_set_label (unsigned label);
-void pdf_enc_set_generation (unsigned generation);
-void pdf_enc_set_passwd (unsigned int size, unsigned int perm,
-                                const char *owner, const char *user);
-void pdf_encrypt_data (const unsigned char *plain, size_t plain_len,
-                              unsigned char **cipher, size_t *cipher_len);
-pdf_obj *pdf_encrypt_obj (void);
 
 #endif /* _PDFENCRYPT_H_ */

@@ -2125,8 +2125,6 @@ read_length (double *vp, double mag, const char **pp, const char *endptr)
 static int
 scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
               int *majorversion, int *minorversion,
-              int *do_enc, int *key_bits, int32_t *permission,
-              char *owner_pw, char *user_pw,
               const char *buf, uint32_t size)
 {
     char  *q;
@@ -2253,48 +2251,8 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 *majorversion = (int)strtol(kv, NULL, 10);
                 free(kv);
             }
-        } else if (ns_pdf && streq_ptr(q, "encrypt") && do_enc) {
-            *do_enc = 1;
-            *owner_pw = *user_pw = 0;
-            while (!error && p < endptr) {
-                char  *kp = parse_c_ident(&p, endptr);
-                if (!kp)
-                    break;
-                else {
-                    pdf_obj *obj;
-                    skip_white(&p, endptr);
-                    if (streq_ptr(kp, "ownerpw")) {
-                        if ((obj = parse_pdf_string(&p, endptr))) {
-                            if (pdf_string_value(obj))
-                                strncpy(owner_pw, pdf_string_value(obj), MAX_PWD_LEN);
-                            pdf_release_obj(obj);
-                        } else
-                            error = -1;
-                    } else if (streq_ptr(kp, "userpw")) {
-                        if ((obj = parse_pdf_string(&p, endptr))) {
-                            if (pdf_string_value(obj))
-                                strncpy(user_pw, pdf_string_value(obj), MAX_PWD_LEN);
-                            pdf_release_obj(obj);
-                        } else
-                            error = -1;
-                    } else if (streq_ptr(kp, "length")) {
-                        if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
-                            *key_bits = (unsigned) pdf_number_value(obj);
-                        } else
-                            error = -1;
-                        pdf_release_obj(obj);
-                    } else if (streq_ptr(kp, "perm")) {
-                        if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
-                            *permission = (unsigned) pdf_number_value(obj);
-                        } else
-                            error = -1;
-                        pdf_release_obj(obj);
-                    } else
-                        error = -1;
-                    free(kp);
-                }
-                skip_white(&p, endptr);
-            }
+        } else if (ns_pdf && streq_ptr(q, "encrypt")) {
+            dpx_warning("Tectonic does not support PDF encryption. Ignored!");
         } else if (ns_dvipdfmx && streq_ptr(q, "config")) {
             dpx_warning("Tectonic does not support `config' special. Ignored.");
         }
@@ -2309,9 +2267,7 @@ void
 dvi_scan_specials (int page_no,
                    double *page_width, double *page_height,
                    double *x_offset, double *y_offset, int *landscape,
-                   int *majorversion, int *minorversion,
-                   int *do_enc, int *key_bits, int32_t *permission,
-                   char *owner_pw, char *user_pw)
+                   int *majorversion, int *minorversion)
 {
     uint32_t       offset;
     unsigned char  opcode;
@@ -2355,7 +2311,6 @@ dvi_scan_specials (int page_no,
                 _tt_abort("Reading DVI file failed!");
             if (scan_special(page_width, page_height, x_offset, y_offset, landscape,
                              majorversion, minorversion,
-                             do_enc, key_bits, permission, owner_pw, user_pw,
                              buf, size))
                 dpx_warning("Reading special command failed: \"%.*s\"", size, buf);
 #undef buf

@@ -89,11 +89,6 @@ static int pdfdecimaldigits = 3;
 /* -2 means ignore image cache (default) */
 static int image_cache_life = -2;
 
-/* Encryption */
-static int     do_encryption = 0;
-static int     key_bits      = 40;
-static int32_t permission    = 0x003C;
-
 time_t source_date_epoch = (time_t) -1;
 
 /* Page device */
@@ -317,7 +312,7 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
         page_width = paper_width; page_height = paper_height;
         w = page_width; h = page_height; lm = landscape_mode;
         xo = x_offset; yo = y_offset;
-        dvi_scan_specials(page_no, &w, &h, &xo, &yo, &lm, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        dvi_scan_specials(page_no, &w, &h, &xo, &yo, &lm, NULL, NULL);
         if (lm != landscape_mode) {
           SWAP(w, h);
           landscape_mode = lm;
@@ -401,7 +396,6 @@ dvipdfmx_main (
     dvi_set_verbose(verbose);
     pdf_dev_set_verbose(verbose);
     pdf_doc_set_verbose(verbose);
-    pdf_enc_set_verbose(verbose);
     pdf_obj_set_verbose(verbose);
     pdf_fontmap_set_verbose(verbose);
     dpx_file_set_verbose(verbose);
@@ -423,8 +417,9 @@ dvipdfmx_main (
   select_paper("letter");
   annot_grow = 0;
   bookmark_open = 0;
-  key_bits = 40;
-  permission = 0x003C;
+
+  pdf_enc_compute_id_string(dvi_filename, pdf_filename);
+
   font_dpi = 600;
   pdfdecimaldigits = 5;
   image_cache_life = -2;
@@ -450,11 +445,8 @@ dvipdfmx_main (
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);
 
-  pdf_enc_compute_id_string(dvi_filename, pdf_filename);
-
   {
     int ver_major = 0,  ver_minor = 0;
-    char owner_pw[MAX_PWD_LEN], user_pw[MAX_PWD_LEN];
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if (dvi2pts == 0.0)
@@ -465,21 +457,11 @@ dvipdfmx_main (
     dvi_scan_specials(0,
                       &paper_width, &paper_height,
                       &x_offset, &y_offset, &landscape_mode,
-                      &ver_major, &ver_minor,
-                      &do_encryption, &key_bits, &permission, owner_pw, user_pw);
+                      &ver_major, &ver_minor);
     if (ver_minor >= PDF_VERSION_MIN && ver_minor <= PDF_VERSION_MAX) {
       pdf_set_version(ver_minor);
     }
-    if (do_encryption) {
-      if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
-            key_bits != 256)
-        _tt_abort("Invalid encryption key length specified: %u", key_bits);
-      else if (key_bits > 40 && pdf_get_version() < 4)
-        _tt_abort("Chosen key length requires at least PDF 1.4. " \
-              "Use \"-V 4\" to change.");
-      do_encryption = 1;
-      pdf_enc_set_passwd(key_bits, permission, owner_pw, user_pw);
-    }
+
     if (landscape_mode) {
       SWAP(paper_width, paper_height);
     }
@@ -494,7 +476,7 @@ dvipdfmx_main (
    * annot_grow:    Margin of annotation.
    * bookmark_open: Miximal depth of open bookmarks.
    */
-  pdf_open_document(pdf_filename, do_encryption, enable_object_stream,
+  pdf_open_document(pdf_filename, enable_object_stream,
                     paper_width, paper_height, annot_grow, bookmark_open,
                     !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE));
 
