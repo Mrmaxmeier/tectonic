@@ -750,24 +750,14 @@ iccp_unpack_header (iccHeader *icch,
 static void
 iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {
-  const unsigned char *p;
+  char* buffer = NEW(proflen, char);
+  memcpy(buffer, (const unsigned char *) profile, proflen);
 
-  p = (const unsigned char *) profile;
+  // zero out the devAttr, intent and ID fields for the checksum
+  memset(buffer + ICC_HEAD_SECT1_START + ICC_HEAD_SECT1_LENGTH, '\0', 12);
+  memset(buffer + ICC_HEAD_SECT2_START + ICC_HEAD_SECT2_LENGTH, '\0', 16);
 
-  int buflen = ICC_HEAD_SECT1_LENGTH + ICC_HEAD_SECT2_LENGTH + ICC_HEAD_SECT3_LENGTH;
-  buflen += 12 + 16; // null bytes
-  buflen += proflen - 128; // body
-
-  char* buffer = NEW(buflen, char);
-
-  int res = sprintf(buffer, "%.*s%.12s%.*s%.16s%.*s%.*s",
-  ICC_HEAD_SECT1_LENGTH, p + ICC_HEAD_SECT1_START, nullbytes16,
-  ICC_HEAD_SECT2_LENGTH, p + ICC_HEAD_SECT2_START, nullbytes16,
-  ICC_HEAD_SECT3_LENGTH, p + ICC_HEAD_SECT3_START,
-  proflen - 128, p + 128);
-  assert (res == buflen);
-
-  ttstub_get_data_md5(buffer, buflen, (char*)checksum);
+  ttstub_get_data_md5(buffer, proflen, (char*)checksum);
   free(buffer);
 }
 
