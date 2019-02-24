@@ -2251,7 +2251,8 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 free(kv);
             }
         } else if (ns_pdf && streq_ptr(q, "encrypt")) {
-            dpx_warning("Tectonic does not support PDF encryption. Ignored!");
+            dpx_warning("Tectonic does not support PDF encryption. Ignored.");
+            dpx_warning("Your PDF will not be encrypted!");
         } else if (ns_dvipdfmx && streq_ptr(q, "config")) {
             dpx_warning("Tectonic does not support `config' special. Ignored.");
         }
