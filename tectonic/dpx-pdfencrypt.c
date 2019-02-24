@@ -43,13 +43,14 @@ unsigned char ID[16];
 "%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata"
 
 // NOTE: this is only used to set the PDF ID
-// TODO: replace this to not depend on the current time
 void
 pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
 {
   char *date_string, *producer;
   struct tm *bd_time;
   MD5_CONTEXT     md5;
+
+  assert (dviname && pdfname);
 
   MD5_init(&md5);
 
@@ -59,17 +60,15 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
   MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
-  free(date_string);
 
   producer = NEW(strlen(PRODUCER)+strlen(DVIPDFMX_PROG_NAME)+strlen(DPX_VERSION), char);
   sprintf(producer, PRODUCER, DVIPDFMX_PROG_NAME, DPX_VERSION);
-  MD5_write(&md5, (unsigned char *)producer, strlen(producer));
+  MD5_write(&md5, (const unsigned char *) producer, strlen(producer));
   free(producer);
 
-  if (dviname)
-    MD5_write(&md5, (const unsigned char *) dviname, strlen(dviname));
-  if (pdfname)
-    MD5_write(&md5, (const unsigned char *) pdfname, strlen(pdfname));
+  MD5_write(&md5, (const unsigned char *) dviname, strlen(dviname));
+  MD5_write(&md5, (const unsigned char *) pdfname, strlen(pdfname));
+
   MD5_final(ID, &md5);
 }
 
