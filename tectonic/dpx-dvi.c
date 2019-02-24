@@ -47,7 +47,6 @@
 #include "dpx-pdfcolor.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
-#include "dpx-pdfencrypt.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
 #include "dpx-sfnt.h"

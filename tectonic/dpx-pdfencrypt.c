@@ -26,7 +26,6 @@
 #include <time.h>
 
 #include "core-bridge.h"
-#include "dpx-dpxcrypt.h"
 #include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -48,28 +47,26 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
 {
   char *date_string, *producer;
   struct tm *bd_time;
-  MD5_CONTEXT     md5;
 
   assert (dviname && pdfname);
-
-  MD5_init(&md5);
 
   date_string = NEW(15, char);
   bd_time = gmtime(&source_date_epoch);
   sprintf(date_string, "%04d%02d%02d%02d%02d%02d",
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
-  MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
 
   producer = NEW(strlen(PRODUCER)+strlen(DVIPDFMX_PROG_NAME)+strlen(DPX_VERSION), char);
   sprintf(producer, PRODUCER, DVIPDFMX_PROG_NAME, DPX_VERSION);
-  MD5_write(&md5, (const unsigned char *) producer, strlen(producer));
+
+
+  size_t len = strlen(date_string) + strlen(producer) + strlen(dviname) + strlen(pdfname);
+  char* databuf = NEW(len+1, char);
+  sprintf(databuf, "%s%s%s%s", date_string, producer, dviname, pdfname);
+  ttstub_get_data_md5(databuf, len, (char*) ID);
   free(producer);
-
-  MD5_write(&md5, (const unsigned char *) dviname, strlen(dviname));
-  MD5_write(&md5, (const unsigned char *) pdfname, strlen(pdfname));
-
-  MD5_final(ID, &md5);
+  free(date_string);
+  free(databuf);
 }
 
 pdf_obj *pdf_enc_id_array (void)

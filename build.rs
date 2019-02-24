@@ -217,7 +217,6 @@ fn main() {
         .file("tectonic/dpx-cmap_write.c")
         .file("tectonic/dpx-cs_type2.c")
         .file("tectonic/dpx-dpxconf.c")
-        .file("tectonic/dpx-dpxcrypt.c")
         .file("tectonic/dpx-dpxfile.c")
         .file("tectonic/dpx-dpxutil.c")
         .file("tectonic/dpx-dvi.c")

@@ -747,27 +747,28 @@ iccp_unpack_header (iccHeader *icch,
 #define ICC_HEAD_SECT3_START  100
 #define ICC_HEAD_SECT3_LENGTH 28
 
-#include "dpx-dpxcrypt.h"
-
 static void
 iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {
   const unsigned char *p;
-  MD5_CONTEXT    md5;
 
   p = (const unsigned char *) profile;
 
-  MD5_init (&md5);
-  MD5_write(&md5, p + ICC_HEAD_SECT1_START, ICC_HEAD_SECT1_LENGTH);
-  MD5_write(&md5, nullbytes16, 12);
-  MD5_write(&md5, p + ICC_HEAD_SECT2_START, ICC_HEAD_SECT2_LENGTH);
-  MD5_write(&md5, nullbytes16, 16);
-  MD5_write(&md5, p + ICC_HEAD_SECT3_START, ICC_HEAD_SECT3_LENGTH);
+  int buflen = ICC_HEAD_SECT1_LENGTH + ICC_HEAD_SECT2_LENGTH + ICC_HEAD_SECT3_LENGTH;
+  buflen += 12 + 16; // null bytes
+  buflen += proflen - 128; // body
 
-  /* body */
-  MD5_write(&md5, p + 128, proflen - 128);
+  char* buffer = NEW(buflen, char);
 
-  MD5_final(checksum, &md5);
+  int res = sprintf(buffer, "%.*s%.12s%.*s%.16s%.*s%.*s",
+  ICC_HEAD_SECT1_LENGTH, p + ICC_HEAD_SECT1_START, nullbytes16,
+  ICC_HEAD_SECT2_LENGTH, p + ICC_HEAD_SECT2_START, nullbytes16,
+  ICC_HEAD_SECT3_LENGTH, p + ICC_HEAD_SECT3_START,
+  proflen - 128, p + 128);
+  assert (res == buflen);
+
+  ttstub_get_data_md5(buffer, buflen, (char*)checksum);
+  free(buffer);
 }
 
 static void
