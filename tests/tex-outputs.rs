@@ -160,6 +160,11 @@ impl TestCase {
 // Keep these alphabetized.
 
 #[test]
+fn mandelbrot() {
+    TestCase::new("mandelbrot").go()
+}
+
+#[test]
 fn md5_of_hello() {
     TestCase::new("md5_of_hello").check_pdf(true).go()
 }

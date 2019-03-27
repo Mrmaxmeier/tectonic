@@ -1,0 +1,172 @@
+\newcount\k
+\newcount\i
+\newcount\j
+\newcount\r
+
+\newlinechar`^^J
+
+\newcount\tmpcnta
+\newcount\tmpcntb
+\newcount\rescnt
+
+\def\modulo#1#2{\tmpcnta=#1
+        \divide\tmpcnta by #2
+        \multiply\tmpcnta by #2
+        \multiply\tmpcnta by -1
+        \advance\tmpcnta by #1\relax
+        \rescnt=\tmpcnta}
+
+\def\fx#1{\tmpcnta=#1
+	\multiply\tmpcnta by 16777216
+	\rescnt=\tmpcnta} % x << 24
+
+\def\xsign#1#2{ %
+	#2=1
+	\ifnum #1 < 0
+		#2=-1
+		\multiply #1 by -1
+	\fi}
+
+\newcount\signa
+\newcount\signb
+\newcount\overflowcheck
+\def\mult#1#2{ % (x >> 12) * (y >> 12)
+	\tmpcnta=#1
+	\tmpcntb=#2
+	\xsign\tmpcnta\signa
+	\xsign\tmpcntb\signb
+	\rescnt=\tmpcnta
+	\divide\rescnt by 16777216
+	\overflowcheck=\tmpcntb
+	\divide\overflowcheck by 16777216
+	\multiply\overflowcheck by \rescnt
+	\ifnum\overflowcheck > 110
+		\rescnt=1862270976 % fx(111)
+	\else
+		\divide \tmpcnta 4096 % x >> 12
+		\divide \tmpcntb 4096 % y >> 12
+		\multiply\tmpcnta by \tmpcntb
+		\rescnt=\tmpcnta
+	\fi
+	\multiply\rescnt by \signa
+	\multiply\rescnt by \signb}
+
+\def\sqrt#1{ % (x >> 12) * (x >> 12)
+	\rescnt=#1
+	\ifnum \rescnt > 184549376
+		\rescnt=2013265920 % would overflow. we'll cap at a pretty big number
+	\else
+	\ifnum \rescnt < -184549376
+		\rescnt=2013265920 % ditto for fx(-11)**2
+	\else
+		\divide \rescnt 4096
+		\multiply\rescnt by \rescnt
+	\fi
+	\fi
+}
+
+\message{^^J}
+
+
+\newcount\cntdepth
+\newcount\loopcnt
+\newcount\computetmpa
+\newcount\computex
+\newcount\computey
+\newcount\tmpsign
+\def\compute#1#2{
+	\cntdepth=111 % if no early exit happens
+	\computex=#1 \relax
+	\computey=#2 \relax
+	\i=0
+	\j=0
+	\r=0
+	\loopcnt=0
+	\loop
+	\advance\loopcnt by 1
+	\ifnum \loopcnt<110 %{
+		% j = mult(r, r) - mult(i, i) - fx(2) + fx(x) / 25;
+		\sqrt\r
+		\j=\rescnt
+		\sqrt\i
+		\multiply \rescnt by -1
+		\advance\j by \rescnt\relax
+		\fx{-2}
+		\advance\j by \rescnt\relax
+		\fx\computex
+		\divide \rescnt by 20%25
+		\advance\j by \rescnt\relax
+		% i = mult(r * 2, i) + fx(y) / 10;
+		\computetmpa=\r
+		\xsign\computetmpa\tmpsign
+		\ifnum\computetmpa > 536870912 % 1 << 29
+			\computetmpa=1073741824 % 1 << 30
+		\else
+			\multiply\computetmpa by 2
+		\fi
+		\multiply\computetmpa by \tmpsign
+		\mult\computetmpa\i
+		\i=\rescnt
+		\fx\computey
+		\divide \rescnt by 25
+		\advance\i by \rescnt
+		% if (mult(j, j) + mult(i, i) >= fx(11))
+		%   break
+		%
+		\sqrt\j
+		\computetmpa=\rescnt
+		\sqrt\i
+		\advance\computetmpa by \rescnt
+		\ifnum \computetmpa > 184549376 % fx(11)
+			\global\cntdepth=\loopcnt
+			\global\loopcnt=999
+		\fi
+		% r = j;
+		\r=\j
+	%}
+	\repeat
+
+	\rescnt=\cntdepth
+}
+
+\protected\long\def\appto#1#2{%
+  \global\edef#2{%
+    \unexpanded\expandafter{#2#1}%
+  }%
+}
+
+\newcount\x\newcount\y
+\y -6
+
+\message{^^J}
+\loop\advance\y by 1\ifnum\y<55{
+	\def\curline{}
+	\x=-32
+	\loop\advance\x by 1
+	\ifnum\x<31{
+		\compute\y\x
+		\advance\rescnt by 240
+		\modulo{\rescnt}{15}
+		\edef\curchar{Z}
+		\ifnum\rescnt=0 \edef\curchar{`} \fi
+		\ifnum\rescnt=1 \edef\curchar{:} \fi
+		\ifnum\rescnt=2 \edef\curchar{-} \fi
+		\ifnum\rescnt=3 \edef\curchar{;} \fi
+		\ifnum\rescnt=4 \edef\curchar{i} \fi
+		\ifnum\rescnt=5 \edef\curchar{!} \fi
+		\ifnum\rescnt=6 \edef\curchar{.} \fi
+		\ifnum\rescnt=7 \edef\curchar{>} \fi
+		\ifnum\rescnt=8 \edef\curchar{)} \fi
+		\ifnum\rescnt=9 \edef\curchar{&} \fi
+		\ifnum\rescnt=10\edef\curchar{*} \fi
+		\ifnum\rescnt=11\edef\curchar{?} \fi
+		\ifnum\rescnt=12\edef\curchar{a} \fi
+		\ifnum\rescnt=13\edef\curchar{x} \fi
+		\ifnum\rescnt=14\edef\curchar{X} \fi
+		\expandafter\appto\curchar\curline
+	}\repeat
+	\message{\curline^^J}
+	%\message{^^J}
+}\repeat
+Check the logs
+\bye
