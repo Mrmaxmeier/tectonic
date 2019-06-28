@@ -29,13 +29,10 @@
 
 #include <stdbool.h>
 
-#define DVIPDFMX_PROG_NAME "xdvipdfmx"
-
 extern int is_xdv;
 extern int translate_origin;
 extern time_t source_date_epoch;
 
-int extractbb(int argc, char *argv[]);
 int dvipdfmx_main(
   const char *pdfname,
   const char *dviname,

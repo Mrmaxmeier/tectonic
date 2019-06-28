@@ -38,14 +38,15 @@
 
 unsigned char ID[16];
 
+// NOTE: updating this string will change the PDF ID in output PDFs
 #define PRODUCER \
-"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata"
+"xdvipdfmx-0.1, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata"
 
 // NOTE: this is only used to set the PDF ID
 void
 pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
 {
-  char *date_string, *producer;
+  char *date_string;
   struct tm *bd_time;
 
   assert (dviname && pdfname);
@@ -56,15 +57,10 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
 
-  producer = NEW(strlen(PRODUCER)+strlen(DVIPDFMX_PROG_NAME)+strlen(DPX_VERSION), char);
-  sprintf(producer, PRODUCER, DVIPDFMX_PROG_NAME, DPX_VERSION);
-
-
-  size_t len = strlen(date_string) + strlen(producer) + strlen(dviname) + strlen(pdfname);
+  size_t len = strlen(date_string) + strlen(PRODUCER) + strlen(dviname) + strlen(pdfname);
   char* databuf = NEW(len+1, char);
-  sprintf(databuf, "%s%s%s%s", date_string, producer, dviname, pdfname);
+  sprintf(databuf, "%s%s%s%s", date_string, PRODUCER, dviname, pdfname);
   ttstub_get_data_md5(databuf, len, (char*) ID);
-  free(producer);
   free(date_string);
   free(databuf);
 }

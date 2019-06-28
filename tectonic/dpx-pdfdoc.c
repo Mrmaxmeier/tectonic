@@ -485,7 +485,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
   }
 
   if (!pdf_lookup_dict(docinfo, "Producer")) {
-    char banner[] = DVIPDFMX_PROG_NAME " (" DPX_VERSION ")";
+    char banner[] = "xdvipdfmx (0.1)";
 
     pdf_add_dict(docinfo,
                  pdf_new_name("Producer"),
