@@ -51,9 +51,6 @@
 #define OBJ_NO_OBJSTM   (1 << 0)
 /* Objects with this flag will not be put into an object stream.
    For instance, all stream objects have this flag set.          */
-#define OBJ_NO_ENCRYPT  (1 << 1)
-/* Objects with this flag will not be encrypted.
-   This implies OBJ_NO_OBJSTM if encryption is turned on.        */
 
 /* Any of these types can be represented as follows */
 struct pdf_obj
@@ -328,7 +325,7 @@ pdf_out_init (const char *filename, bool enable_object_stream)
     if (pdf_version >= 5) {
         if (enable_object_stream) {
             xref_stream = pdf_new_stream(STREAM_COMPRESS);
-            xref_stream->flags |= OBJ_NO_ENCRYPT;
+            xref_stream->flags |= OBJ_NO_OBJSTM;
             trailer_dict = pdf_stream_dict(xref_stream);
             pdf_add_dict(trailer_dict, pdf_new_name("Type"), pdf_new_name("XRef"));
             do_objstm = 1;
@@ -534,15 +531,6 @@ pdf_set_id (pdf_obj *id)
     if (pdf_add_dict(trailer_dict, pdf_new_name("ID"), id)) {
         _tt_abort("ID already set!");
     }
-}
-
-void
-pdf_set_encrypt (pdf_obj *encrypt)
-{
-    if (pdf_add_dict(trailer_dict, pdf_new_name("Encrypt"), pdf_ref_obj(encrypt))) {
-        _tt_abort("Encrypt object already set!");
-    }
-    encrypt->flags |= OBJ_NO_ENCRYPT;
 }
 
 static
