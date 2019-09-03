@@ -7437,5 +7437,42 @@ close_up_shop:
     }
 
     ttstub_output_close (log_file);
+
+
+    free(name_of_file); name_of_file = NULL;
+    free(entry_ints); entry_ints = NULL;
+    free(entry_strs); entry_strs = NULL;
+    for (int i = 0; i < bib_ptr; i++) {
+        free(bib_file[i]); bib_file[i] = NULL;
+    }
+    free(bst_file); bst_file = NULL;
+
+    free(bib_file); bib_file = NULL;
+    free(bib_list); bib_list = NULL;
+    free(wiz_functions); wiz_functions = NULL;
+    free(field_info); field_info = NULL;
+    free(s_preamble); s_preamble = NULL;
+    free(str_pool); str_pool = NULL;
+    free(buffer); buffer = NULL;
+    free(sv_buffer); sv_buffer = NULL;
+    free(ex_buf); ex_buf = NULL;
+    free(out_buf); out_buf = NULL;
+    free(name_tok); name_tok = NULL;
+    free(name_sep_char); name_sep_char = NULL;
+    free(glb_str_ptr); glb_str_ptr = NULL;
+    free(global_strs); global_strs = NULL;
+    free(glb_str_end); glb_str_end = NULL;
+    free(cite_list); cite_list = NULL;
+    free(type_list); type_list = NULL;
+    free(entry_exists); entry_exists = NULL;
+    free(cite_info); cite_info = NULL;
+    free(str_start); str_start = NULL;
+    free(hash_next); hash_next = NULL;
+    free(hash_text); hash_text = NULL;
+    free(hash_ilk); hash_ilk = NULL;
+    free(ilk_info); ilk_info = NULL;
+    free(fn_type); fn_type = NULL;
+    free(lit_stack); lit_stack = NULL;
+    free(lit_stk_type); lit_stk_type = NULL;
     return history;
 }
