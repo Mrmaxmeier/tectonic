@@ -323,6 +323,7 @@ pub struct ProcessingSessionBuilder {
     keep_intermediates: bool,
     keep_logs: bool,
     synctex: bool,
+    unstable_options: Vec<String>,
 }
 
 impl ProcessingSessionBuilder {
@@ -461,6 +462,13 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Sets unstable (stringly-typed) engine flags
+    pub fn unstable_option(&mut self, v: String) -> &mut Self {
+        self.unstable_options.push(v);
+        self
+    }
+
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
@@ -548,6 +556,7 @@ impl ProcessingSessionBuilder {
             keep_logs: self.keep_logs,
             noted_tex_warnings: false,
             synctex_enabled: self.synctex,
+            unstable_options: self.unstable_options
         })
     }
 }
@@ -604,6 +613,8 @@ pub struct ProcessingSession {
     keep_logs: bool,
     noted_tex_warnings: bool,
     synctex_enabled: bool,
+
+    unstable_options: Vec<String>,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1148,9 +1159,14 @@ impl ProcessingSession {
     }
 
     fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+        let deterministic_tags = self.unstable_options.contains(&"pdf-deterministic-tags".to_owned());
+        let compression = !self.unstable_options.contains(&"pdf-disable-compression".to_owned());
+        let keep_xdv = self.unstable_options.contains(&"keep-xdv".to_owned());
         {
             let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::new();
+            let mut engine = XdvipdfmxEngine::new()
+                .with_deterministic_tags(deterministic_tags)
+                .with_compression(compression);
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(
                 &mut stack,
@@ -1160,8 +1176,9 @@ impl ProcessingSession {
                 &self.tex_pdf_path.to_str().unwrap(),
             )?;
         }
-
-        self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
+        if !keep_xdv {
+            self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
+        }
         Ok(0)
     }
 

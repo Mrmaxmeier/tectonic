@@ -83,6 +83,9 @@ struct CliOptions {
     /// The directory in which to place output files [default: the directory containing <input>]
     #[structopt(name = "outdir", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
+    /// Unstable flags to tectonic, see 'tectonic -Z help' for details
+    #[structopt(short = "Z")]
+    unstable_flags: Option<Vec<String>>,
 }
 fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
@@ -177,6 +180,16 @@ fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBack
         )?));
     } else {
         sess_builder.bundle(config.default_bundle(only_cached, status)?);
+    }
+
+    for unstable_flag in &args.unstable_flags.unwrap_or_default() {
+        match &**unstable_flag {
+            "help" => panic!("HELP"),
+            "pdf-disable-compression" | "pdf-deterministic-tags" | "keep-xdv" => {
+                sess_builder.unstable_option(unstable_flag.clone());
+            },
+            _ => tt_note!(status, "unknown unstable flag {}", unstable_flag),
+        }
     }
 
     let mut sess = sess_builder.create(status)?;
