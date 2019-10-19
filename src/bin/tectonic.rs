@@ -85,6 +85,7 @@ struct CliOptions {
     outdir: Option<PathBuf>,
     /// Unstable flags to tectonic, see 'tectonic -Z help' for details
     #[structopt(short = "Z")]
+    #[structopt(number_of_values = 1)] // Disallows `-Z x y`. `-Z x -Z y` is allowed.
     unstable_flags: Option<Vec<String>>,
 }
 fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<()> {
