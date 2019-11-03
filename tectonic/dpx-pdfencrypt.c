@@ -44,7 +44,7 @@ unsigned char ID[16];
 
 // NOTE: this is only used to set the PDF ID
 void
-pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
+pdf_enc_compute_id_string (time_t build_date, const char *dviname, const char *pdfname)
 {
   char *date_string;
   struct tm *bd_time;
@@ -52,7 +52,7 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
   assert (dviname && pdfname);
 
   date_string = NEW(15, char);
-  bd_time = gmtime(&source_date_epoch);
+  bd_time = gmtime(&build_date);
   sprintf(date_string, "%04d%02d%02d%02d%02d%02d",
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);

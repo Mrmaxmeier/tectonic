@@ -405,6 +405,8 @@ dvipdfmx_main (
   pdf_set_compression(compress ? 9 : 0);
   pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
+  source_date_epoch = build_date;
+
   system_default();
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
@@ -418,12 +420,11 @@ dvipdfmx_main (
   annot_grow = 0;
   bookmark_open = 0;
 
-  pdf_enc_compute_id_string(dvi_filename, pdf_filename);
+  pdf_enc_compute_id_string(source_date_epoch, dvi_filename, pdf_filename);
 
   font_dpi = 600;
   pdfdecimaldigits = 5;
   image_cache_life = -2;
-  source_date_epoch = build_date;
   pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);

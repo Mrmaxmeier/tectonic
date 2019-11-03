@@ -30,6 +30,6 @@
 #include "dpx-pdfobj.h"
 
 pdf_obj *pdf_enc_id_array (void);
-void pdf_enc_compute_id_string (const char *dviname, const char *pdfname);
+void pdf_enc_compute_id_string (time_t build_date, const char *dviname, const char *pdfname);
 
 #endif /* _PDFENCRYPT_H_ */
