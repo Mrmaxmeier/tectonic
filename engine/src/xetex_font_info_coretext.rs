@@ -9,6 +9,7 @@
 #![feature(extern_types)]
 
 use harfbuzz_sys::hb_font_t;
+use std::ptr;
 
 extern crate libc;
 extern "C" {
@@ -1408,7 +1409,7 @@ authorization from the copyright holders.
  */
 #[no_mangle]
 pub unsafe extern "C" fn XeTeXFontInst_Mac_dtor(mut self_0: *mut XeTeXFontInst) {
-    let mut real_self: *mut XeTeXFontInst_Mac = self_ptr::null_mut();
+    let mut real_self: *mut XeTeXFontInst_Mac = self_0 as *mut _;
     if !(*real_self).m_descriptor.is_null() {
         CFRelease((*real_self).m_descriptor as CFTypeRef);
     }
@@ -1480,7 +1481,7 @@ pub unsafe extern "C" fn XeTeXFontInst_Mac_ctor(
 ) {
     XeTeXFontInst_base_ctor(
         &mut (*self_0).super_,
-        ptr::null()::c_char,
+        ptr::null(),
         0i32,
         pointSize,
         status,
